@@ -1,0 +1,16 @@
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+sqa_final_project_venv/
+venv/
+env/
+.env
+.venv
+
+# Testing
+.pytest_cache/
+*.log
