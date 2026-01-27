@@ -1,0 +1,10 @@
+login
+admin
+create
+New Username
+100
+withdrawal
+New Username
+12345
+50
+logout
