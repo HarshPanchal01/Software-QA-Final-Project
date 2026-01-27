@@ -1,0 +1,7 @@
+login
+standard
+Bob Smith
+withdrawl
+22222
+200
+logout
