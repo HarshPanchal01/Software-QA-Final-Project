@@ -1,0 +1,6 @@
+login
+admin
+delete
+Peter Parker
+12345
+logout
