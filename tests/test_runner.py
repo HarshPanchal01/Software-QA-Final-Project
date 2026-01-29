@@ -16,8 +16,8 @@ def get_test_cases():
     test_cases = []
     for input_file in test_files:
         # Construct the expected output file path
-        # Replaces .in.txt with .out.txt
-        expected_output_file = input_file.replace(".in.txt", ".out.txt")
+        # Replaces .in.txt with .out.txt AND test_inputs with test_outputs
+        expected_output_file = input_file.replace(".in.txt", ".out.txt").replace("test_inputs", "test_outputs")
         
         # Test name for pytest output (e.g., login/T01_login_standard)
         rel_path = os.path.relpath(input_file, TEST_DIR)
