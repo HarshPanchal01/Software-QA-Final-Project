@@ -1,7 +1,0 @@
-login
-standard
-John Doe
-create
-New User
-100
-logout

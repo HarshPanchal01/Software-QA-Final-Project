@@ -1,8 +1,0 @@
-login
-standard
-Bob Smith
-transfer
-22222
-67890
-200
-logout

@@ -1,6 +1,0 @@
-login
-admin
-create
-ThisNameIsDefinitelyTooLong
-100
-logout

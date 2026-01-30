@@ -1,4 +1,0 @@
-deposit
-login
-admin
-logout
