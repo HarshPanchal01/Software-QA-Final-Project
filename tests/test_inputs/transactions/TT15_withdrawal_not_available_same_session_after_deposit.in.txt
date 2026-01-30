@@ -1,0 +1,10 @@
+login
+standard
+Bob Smith
+deposit
+22222
+500
+withdrawal
+22222
+400
+logout

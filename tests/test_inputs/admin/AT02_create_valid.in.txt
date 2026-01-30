@@ -1,0 +1,6 @@
+login
+admin
+create
+Marty McFly
+500
+logout

@@ -1,0 +1,6 @@
+login
+admin
+delete
+Jane Doe
+67890
+logout

@@ -1,0 +1,6 @@
+login
+admin
+changeplan
+Bruce Wayne
+12345
+logout

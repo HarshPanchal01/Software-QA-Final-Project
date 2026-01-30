@@ -1,0 +1,8 @@
+login
+standard
+John Doe
+paybill
+12345
+CQ
+2200
+logout
