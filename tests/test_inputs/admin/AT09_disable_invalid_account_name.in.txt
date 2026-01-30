@@ -1,0 +1,6 @@
+login
+admin
+disable
+Agent Smith
+12345
+logout

@@ -1,0 +1,6 @@
+login
+admin
+create
+Rich Guy
+1000000
+logout
