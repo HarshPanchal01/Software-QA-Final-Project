@@ -1,6 +1,0 @@
-login
-admin
-delete
-John Doe
-99999
-logout

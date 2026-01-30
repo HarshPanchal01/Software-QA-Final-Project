@@ -1,8 +1,0 @@
-login
-standard
-Bob Smith
-paybill
-22222
-FI
-200
-logout

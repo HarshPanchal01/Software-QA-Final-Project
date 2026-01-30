@@ -1,7 +1,0 @@
-login
-standard
-Jane Doe
-deposit
-67890
-300
-logout
