@@ -19,8 +19,9 @@ python3 -m venv sqa_final_project_venv
 # Activate the virtual environment
 source sqa_final_project_venv/bin/activate
 
-# Install dependencies
+# Install dependencies & Install CLI tool in editable mode
 pip3 install -r requirements.txt
+pip3 install -e .
 ```
 
 **Windows:**
@@ -31,14 +32,31 @@ python -m venv sqa_final_project_venv
 :: Activate the virtual environment
 sqa_final_project_venv\Scripts\activate
 
-:: Install dependencies
+:: Install dependencies & Install CLI tool in editable mode
 pip install -r requirements.txt
+pip install -e .
 ```
 
-### 3. Running Tests
+### 3. Usage (Phase 2 - Front End)
+
+Once installed (via `pip install -e .`), you can run the application directly from your terminal:
+
 ```bash
-pytest
+qabank
 ```
+
+#### Manual Testing
+To test the application manually:
+1.  Ensure a `bank_accounts.txt` file exists in your current directory.
+    *   *Sample content:*
+        ```text
+        12345 User Name            A 00500.00
+        99999 Admin User           A 00000.00
+        00000 END_OF_FILE          A 00000.00
+        ```
+2.  Run `qabank`.
+3.  Type `login` to start a session.
+4.  Type `help` to see available commands.
 
 ### 4. Commiting to GitHub repo
  - Please use your own branch and open a pull request into main
