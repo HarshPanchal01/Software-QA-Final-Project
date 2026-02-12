@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qabank"
+version = "0.1.0"
+description = "A CLI Banking System for CSCI 3060U"
+authors = [
+  {name = "Harsh Panchal"},
+  {name = "Dylan Reynolds"},
+  {name = "Nathan Tandory"},
+  {name = "Konner Yi"}
+]
+dependencies = []
+requires-python = ">=3.12"
+
+[project.scripts]
+qabank = "src.front_end.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+namespaces = false

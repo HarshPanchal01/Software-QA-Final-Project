@@ -14,3 +14,4 @@ env/
 # Testing
 .pytest_cache/
 *.log
+*.egg-info/

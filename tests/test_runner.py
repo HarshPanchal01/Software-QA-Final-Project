@@ -37,8 +37,9 @@ def test_cli_cases(test_name, input_file, expected_output_file):
         input_data = f.read()
 
     # 2. Run the application
+    # Updated to run as module to handle imports correctly in the new structure
     process = subprocess.Popen(
-        [sys.executable, SRC_FILE],
+        [sys.executable, "-m", "src.front_end.cli"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
