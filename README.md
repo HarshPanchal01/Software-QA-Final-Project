@@ -58,6 +58,20 @@ To test the application manually:
 3.  Type `login` to start a session.
 4.  Type `help` to see available commands.
 
+#### Automated Testing / Demonstration
+To run all test cases from Phase 1 against the current build and see the output in the console:
+
+```bash
+./run_all_tests.sh
+```
+*Note: This script runs the application against all `.in.txt` files in `tests/test_inputs/` sequentially. It is useful for verifying that the application handles all input scenarios without crashing.*
+
+To run the formal test suite (verification against expected output):
+```bash
+pytest
+```
+*(Note: `pytest` will currently fail because the UI output prompts (e.g., "Welcome...") do not match the strict Phase 1 output files which expect only transaction logs.)*
+
 ### 4. Commiting to GitHub repo
  - Please use your own branch and open a pull request into main
  - Each pull request will require a review from one of the other group members
