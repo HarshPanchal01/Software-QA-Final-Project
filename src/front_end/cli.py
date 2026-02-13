@@ -528,10 +528,12 @@ class ATMFrontEnd:
         output_filename = "bank_account_transaction_file.txt"
         try:
             with open(output_filename, "w") as f:
+                print("Daily Transaction File Content:")
                 for t in self.transaction_list:
                     line = t.to_file_record()
                     if line:
                         f.write(line + "\n")
+                        print(line)
         except IOError as e:
             self._print_message(f"Error writing transaction file: {e}", MessageType.ERROR)
     
