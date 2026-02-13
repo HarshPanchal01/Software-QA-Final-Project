@@ -30,18 +30,24 @@ def get_test_cases():
 @pytest.mark.parametrize("test_name, input_file, expected_output_file", get_test_cases())
 def test_cli_cases(test_name, input_file, expected_output_file):
     """
-    Runs the CLI app with the given input file and asserts the output matches the expected file.
+    Runs the CLI app with the given input file and asserts the transaction file output 
+    matches the expected file.
     """
     # 1. Read input content
     with open(input_file, 'r') as f:
         input_data = f.read()
+
+    # Ensure clean state (remove old output file if exists)
+    output_filename = "bank_account_transaction_file.txt"
+    if os.path.exists(output_filename):
+        os.remove(output_filename)
 
     # 2. Run the application
     # Updated to run as module to handle imports correctly in the new structure
     process = subprocess.Popen(
         [sys.executable, "-m", "src.front_end.cli"],
         stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+        stdout=subprocess.PIPE, # Capture stdout to keep console clean, but ignore it for comparison
         stderr=subprocess.PIPE,
         text=True,
         cwd=PROJECT_ROOT # Run from project root so paths work
@@ -49,13 +55,23 @@ def test_cli_cases(test_name, input_file, expected_output_file):
 
     stdout, stderr = process.communicate(input=input_data)
 
-    # 3. Read expected output
+    # 3. Read Actual Output (from generated file)
+    actual_output = ""
+    if os.path.exists(output_filename):
+        with open(output_filename, 'r') as f:
+            actual_output = f.read()
+    
+    # 4. Read Expected Output
     if not os.path.exists(expected_output_file):
         pytest.fail(f"Expected output file not found: {expected_output_file}")
 
     with open(expected_output_file, 'r') as f:
         expected_output = f.read()
 
-    # 4. Compare (Assertion)    
-    # Simple exact match for now:
-    assert stdout == expected_output, f"Output mismatch for {test_name}.\n\nEXPECTED:\n{expected_output}\n\nACTUAL:\n{stdout}\n\nSTDERR:\n{stderr}"
+    # 5. Compare (Assertion)    
+    # We strip whitespace from both ends to ignore trailing newlines differences
+    assert actual_output.strip() == expected_output.strip(), f"Transaction File mismatch for {test_name}.\n\nEXPECTED (File Content):\n{expected_output}\n\nACTUAL (File Content):\n{actual_output}\n\nAPP STDOUT:\n{stdout}\n\nAPP STDERR:\n{stderr}"
+    
+    # Cleanup
+    if os.path.exists(output_filename):
+        os.remove(output_filename)

@@ -247,7 +247,13 @@ class ATMFrontEnd:
         
         stype = SessionType.ADMIN if session_input == "admin" else SessionType.STANDARD
         self.session.login(stype, name)
-        self._print_message(f"Logged in as {session_input}.")
+        
+        login_msg = f"Successfully logged in as {session_input}"
+        if name:
+            login_msg += f" (User: {name})"
+        login_msg += "."
+        
+        self._print_message(login_msg)
     
     def _handle_logout(self) -> None:
         """
@@ -265,7 +271,7 @@ class ATMFrontEnd:
         self._write_transaction_file()
         self.session.logout()
         self.transaction_list.clear() # Clear transactions for next session
-        self._print_message("Session terminated.")
+        self._print_message("Successfully logged out.")
         
     def _write_transaction_file(self) -> None:
         """
@@ -358,7 +364,7 @@ class ATMFrontEnd:
         if not self.session.is_admin():
             self.session.withdrawn_amount += amount
             
-        self._print_message("Withdrawal successful.")
+        self._print_message(f"Withdrawal of ${amount:.2f} successful.")
 
     def _handle_deposit(self) -> None:
         """
@@ -405,7 +411,7 @@ class ATMFrontEnd:
         
         transaction = Deposit(holder_name, account_number, amount)
         self.transaction_list.append(transaction)
-        self._print_message("Deposit successful.")
+        self._print_message(f"Deposit of ${amount:.2f} successful.")
 
     def _handle_paybill(self) -> None:
         """
@@ -477,7 +483,7 @@ class ATMFrontEnd:
         if not self.session.is_admin():
             self.session.paybill_amount += amount
             
-        self._print_message("Paybill successful.")
+        self._print_message(f"Paybill of ${amount:.2f} to {company} successful.")
             
     def _print_message(self, message):
         """

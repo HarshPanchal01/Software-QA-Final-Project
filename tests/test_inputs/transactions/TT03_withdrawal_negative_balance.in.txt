@@ -1,7 +1,7 @@
 login
 standard
 Bob Smith
-withdrawl
+withdrawal
 22222
 200
 logout

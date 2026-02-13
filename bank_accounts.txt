@@ -1,3 +1,5 @@
-12345 User Name            A 00500.00
-99999 Admin User           A 00000.00
+12345 John Doe             A 01000.00
+22222 Bob Smith            A 00010.00
+67890 Jane Doe             A 00500.00
+56789 Jane Smith           A 00000.00
 00000 END_OF_FILE          A 00000.00

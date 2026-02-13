@@ -1,7 +1,7 @@
 login
 standard
 John Doe
-withdrawl
+withdrawal
 12345
 600
 logout
