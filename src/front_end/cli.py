@@ -19,10 +19,10 @@ Usage:
     Run the program using the command `qabank` (after installation) 
     or via `python3 -m src.front_end.cli`.
 """
-
 from src.front_end.session import Session
 from src.front_end.repository import AccountRepository
 from src.front_end.models import SessionType
+from src.front_end.models import MessageType
 from src.front_end.transactions import (
     Withdrawal, Transfer, Paybill, Deposit, Create, Delete, Disable, ChangePlan, EndOfSession
 )
@@ -55,7 +55,7 @@ class ATMFrontEnd:
         self.session = Session()
         self.account_repository = AccountRepository()
         self.transaction_list = []
-    
+            
     def start(self) -> None:
         """
         Starts the ATM session loop.
@@ -66,8 +66,8 @@ class ATMFrontEnd:
             when EOF occurs, it automatically logs them out to ensure the transaction
             file is written.
         """
-        print("Welcome to the QA Bank System (qabank)")
-        print("Type 'login' to begin session.")
+        self._print_message("Welcome to the QA Bank System (qabank)", MessageType.ACTION)
+        self._print_message("Type 'login' to begin session.", MessageType.INFO)
         
         while True:
             try:
@@ -124,13 +124,13 @@ class ATMFrontEnd:
         
         # ignore command if it doesn't exist
         if command_lower not in self.COMMANDS:
-            self._print_message(f"Error: command '{command}' does not exist. Type 'help' for a list of commands.")
+            self._print_message(f"Error: command '{command}' does not exist. Type 'help' for a list of commands.", MessageType.ERROR)
             return
 
         # Handle login if not already logged in
         if command_lower == "login":
             if self.session.is_logged_in():
-                self._print_message("Error: Already logged in.")
+                self._print_message("You are already logged in. You must logout to login again.", MessageType.WARNING)
             else:
                 self._handle_login()
             return
@@ -141,20 +141,20 @@ class ATMFrontEnd:
 
         if command_lower == "quit":
             if self.session.is_logged_in():
-                self._print_message("Error: Please logout first.")
-            else:
-                self._print_message("Exiting QA Bank System.")
-                exit(0)
+                self.session.logout() # Ensure we log out to write transaction file if user tries to quit without logging out
+            
+            self._print_message("Exiting QA Bank System.", MessageType.ACTION)
+            exit(0)
             return
         
         # If not logged in and user hasn't attempted to login, ignore
         if not self.session.is_logged_in():
-            self._print_message("Error: Please login first.")
+            self._print_message("Error: Please login first.", MessageType.ERROR)
             return
         
         # ignore a privilege command request for a non-admin
         if command_lower in self.PRIVELEGED_COMMANDS and not self.session.is_admin():
-            self._print_message(f"Error: '{command}' is an admin-only command.")
+            self._print_message(f"Error: '{command}' is an admin-only command.", MessageType.ERROR)
             return
         
         match command_lower:
@@ -183,35 +183,253 @@ class ATMFrontEnd:
         """
         Displays available commands based on session state.
         """
+        visible_commands = set(self.COMMANDS)
+        
+        # if not logged in, only show login and quit commands.
         if not self.session.is_logged_in():
-            print("Available commands: login, quit")
-            return
-            
-        cmds = ["logout", "withdrawal", "transfer", "paybill", "deposit"]
+            visible_commands.intersection_update({"login", "quit"})
+        
+        # if logged in, dont show login command in help since it can't be used until logout.
+        if self.session.is_logged_in():
+            visible_commands.difference_update({"login"})
+
+        # if session is not in admin, dont show admin only commands
+        if not self.session.is_admin():
+            visible_commands.difference_update(self.PRIVELEGED_COMMANDS)
+
+        self._print_message(f"Available commands: {', '.join(visible_commands)}", MessageType.INFO)
+
+    def _handle_transfer(self):
+        """
+        Handles the front end logic for a 'transfer' transaction.
+
+        Intention:
+            - Prompts user for source account holder name, source account number,
+                destination account number, and amount to transfer.
+            - Validates:
+                1. Source account exists and ownership matches.
+                2. Destination account exists.
+                3. Standard session transfer limit ($1000) is not exceeded.
+                4. Both accounts have at least $0.00 balance after the transaction.
+        
+        Note: this method has some validation that may be duplicative of required back end
+            validation, so this could be cut down when we have the back end implemented. 
+        """
+        # 1. Account Holder Name
+        holder_name = self.session.current_user
         if self.session.is_admin():
-            cmds.extend(["create", "delete", "disable", "changeplan"])
-            
-        print(f"Available commands: {', '.join(cmds)}")
+            self._print_message("Enter source account holder name:", MessageType.INFO)
+            holder_name = self.read_line()
 
-    def _handle_transfer(self): 
-        # TODO (Nathan): Implement transfer logic (verify ownership, destination, $1000 limit)
-        self._print_message("Feature 'transfer' not implemented yet.")
+        # 2. Source Account Number
+        self._print_message("Enter source account number:", MessageType.INFO)
+        from_account_number = self.read_line()
 
-    def _handle_create(self): 
-        # TODO (Nathan): Implement create logic (Admin only, unique number check)
-        self._print_message("Feature 'create' not implemented yet.")
+        # 3. Destination Account Number
+        self._print_message("Enter destination account number:", MessageType.INFO)
+        to_account_number = self.read_line()
+
+        # 4. Amount
+        self._print_message("Enter amount to transfer:", MessageType.INFO)
+        try:
+            amount_str = self.read_line()
+            if amount_str is None:
+                self._print_message("Error: Amount cannot be empty.", MessageType.ERROR)
+                return
+            amount = float(amount_str)
+        except ValueError:
+            self._print_message("Error: Invalid amount format.", MessageType.ERROR)
+            return
+
+        # Validation 
+        # validate source account exists
+        from_account = self.account_repository.find_account(from_account_number)
+        if from_account is None:
+            self._print_message("Error: Source account not found.", MessageType.ERROR)
+            return
+        # validate source account name matches given source account name
+        if from_account.holder_name != holder_name:
+            self._print_message(f"Error: Account number {from_account_number} does not belong to holder {holder_name}.", MessageType.ERROR)
+            return
+
+        # validate destination account exists 
+        to_account = self.account_repository.find_account(to_account_number)
+        if to_account is None:
+            self._print_message("Error: Destination account not found.", MessageType.ERROR)
+            return
+
+        # validate session transfer limit (Standard only)
+        if not self.session.is_admin():
+            if self.session.transferred_amount + amount > 1000.00:
+                self._print_message("Error: Session transfer limit ($1000) exceeded. Login as admin to bypass this limit.", MessageType.ERROR)
+                return
+        
+        # validate source and destination accounts have at least $0.00 after transaction
+        if from_account.balance - amount < 0.00:
+            self._print_message("Error: Insufficient funds in source account.", MessageType.ERROR)
+            return
+        if to_account.balance + amount < 0.00:
+            self._print_message("Error: Destination account would have negative balance.", MessageType.ERROR)
+            return
+
+        # Transaction
+        transaction = Transfer(holder_name, from_account_number, to_account_number, amount)
+        self.transaction_list.append(transaction)
+
+        if not self.session.is_admin():
+            self.session.transferred_amount += amount
+
+        self._print_message(f"Transfer of ${amount:.2f} successful.", MessageType.SUCCESS)
+
+    def _handle_create(self):
+        """
+        Handles the 'create' transaction.
+
+        Intention:
+            - Prompts for account holder name and initial balance.
+            - Validates:
+                1. Account holder name is non-empty and at most 20 characters.
+                2. Initial balance is a valid amount within transaction field limits.
+                
+        Note: this method has some validation that may be duplicative of required back end
+            validation, so this could be cut down when we have the back end implemented. 
+        """
+        self._print_message("Enter account holder name:", MessageType.INFO)
+        holder_name = self.read_line()
+        if not holder_name:
+            self._print_message("Error: Name cannot be empty.", MessageType.ERROR)
+            return
+        if len(holder_name) > 20:
+            self._print_message("Error: Account holder name cannot exceed 20 characters.", MessageType.ERROR)
+            return
+
+        self._print_message("Enter initial balance:", MessageType.INFO)
+        try:
+            initial_balance = float(self.read_line())
+        except (TypeError, ValueError):
+            self._print_message("Error: Invalid balance format.", MessageType.ERROR)
+            return
+
+        if initial_balance < 0.00:
+            self._print_message("Error: Initial balance cannot be negative.", MessageType.ERROR)
+            return
+        if initial_balance > 99999.99:
+            self._print_message("Error: Initial balance exceeds maximum allowed value ($99999.99).", MessageType.ERROR)
+            return
+
+        # Transaction
+        transaction = Create(holder_name, initial_balance)
+        self.transaction_list.append(transaction)
+        self._print_message(f"Account of holder '{holder_name}' with ${initial_balance:.2f} has been created.", MessageType.SUCCESS)
 
     def _handle_delete(self): 
-        # TODO (Nathan): Implement delete logic (Admin only, name/number match)
-        self._print_message("Feature 'delete' not implemented yet.")
+        """
+        Handles the 'delete' transaction to delete an account.
+
+        Intention:
+            - Prompts for account holder name and account number.
+            - Validates:
+                1. Account matches the given account holder name and account number.
+                
+        Note: this method may have some validation that may be duplicative of required back end
+            validation, so this could be cut down when we have the back end implemented. 
+        """
+        self._print_message("Enter account holder name:", MessageType.INFO)
+        holder_name = self.read_line()
+
+        self._print_message("Enter account number:", MessageType.INFO)
+        account_number = self.read_line()
+
+        # Validate account exists and matches given holder name
+        account = self.account_repository.find_account(account_number)
+        if account is None:
+            self._print_message("Error: Account not found.", MessageType.ERROR)
+            return
+        if holder_name is None or holder_name.strip() == "":
+            self._print_message("Error: Account holder name cannot be empty.", MessageType.ERROR)
+            return
+        if account.holder_name != holder_name:
+            self._print_message(f"Error: Account number {account_number} does not belong to holder {holder_name}.", MessageType.ERROR)
+            return
+
+        # Transaction
+        transaction = Delete(holder_name, account_number)
+        self.transaction_list.append(transaction)
+        self._print_message(f"Account {account_number} belonging to holder '{holder_name}' has been deleted.", MessageType.SUCCESS)
 
     def _handle_disable(self): 
-        # TODO (Nathan): Implement disable logic (Admin only)
-        self._print_message("Feature 'disable' not implemented yet.")
+        """
+        Handles the 'disable' transaction to disable an account.
 
+        Intention:
+            - Prompts for account holder name and account number.
+            - Changes the account status to 'Disabled' in the transaction file.
+            - Validates:
+                1. Account matches the given account holder name and account number.
+                2. Session is Admin.
+                
+        Note: this method may have some validation that may be duplicative of required back end
+            validation, so this could be cut down when we have the back end implemented. 
+        """
+        self._print_message("Enter account holder name:", MessageType.INFO)
+        holder_name = self.read_line()
+
+        self._print_message("Enter account number:", MessageType.INFO)
+        account_number = self.read_line()
+
+        # Validate account exists and matches given holder name
+        account = self.account_repository.find_account(account_number)
+        if account is None:
+            self._print_message("Error: Account not found.", MessageType.ERROR)
+            return
+        if holder_name is None or holder_name.strip() == "":
+            self._print_message("Error: Account holder name cannot be empty.", MessageType.ERROR)
+            return
+        if account.holder_name != holder_name:
+            self._print_message(f"Error: Account number {account_number} does not belong to holder {holder_name}.", MessageType.ERROR)
+            return
+        
+        # Transaction
+        transaction = Disable(holder_name, account_number)
+        self.transaction_list.append(transaction)
+        self._print_message(f"Account {account_number} has been disabled.", MessageType.SUCCESS)
+        
     def _handle_changeplan(self): 
-        # TODO (Nathan): Implement changeplan logic (Admin only, SP <-> NP)
-        self._print_message("Feature 'changeplan' not implemented yet.")
+        """
+        Handles the 'changeplan' transaction to change an account's plan.
+
+        Intention:
+            - Prompts for account holder name and account number.
+            - Changes the account plan from student (SP) to non-student (NP).
+            - Validates:
+                1. Account matches the given account holder name and account number.
+                2. Session is Admin.
+                
+        Note: this method may have some validation that may be duplicative of required back end
+            validation, so this could be cut down when we have the back end implemented. 
+        """
+        self._print_message("Enter account holder name:", MessageType.INFO)
+        holder_name = self.read_line()
+
+        self._print_message("Enter account number:", MessageType.INFO)
+        account_number = self.read_line()
+
+        # Validate account exists and matches given holder name
+        account = self.account_repository.find_account(account_number)
+        if account is None:
+            self._print_message("Error: Account not found.", MessageType.ERROR)
+            return
+        if holder_name is None or holder_name.strip() == "":
+            self._print_message("Error: Account holder name cannot be empty.", MessageType.ERROR)
+            return
+        if account.holder_name != holder_name:
+            self._print_message(f"Error: Account number {account_number} does not belong to holder {holder_name}.", MessageType.ERROR)
+            return
+
+        # Transaction
+        transaction = ChangePlan(holder_name, account_number)
+        self.transaction_list.append(transaction)
+        self._print_message(f"Account {account_number} plan has been changed.", MessageType.SUCCESS)
             
     def _handle_login(self) -> None:
         """
@@ -224,22 +442,22 @@ class ATMFrontEnd:
             - Initializes the Session object.
         """
         if self.session.is_logged_in():
-            self._print_message("Error: Already logged in.")
+            self._print_message("Error: Already logged in.", MessageType.ERROR)
             return
 
-        self._print_message("Enter session type (standard/admin):")
+        self._print_message("Enter session type (standard/admin):", MessageType.INFO)
         session_input = self.read_line()
         
         if session_input not in ["standard", "admin"]:
-            self._print_message("Error: Invalid session type.")
+            self._print_message("Error: Invalid session type.", MessageType.ERROR)
             return
             
         name = ""
         if session_input == "standard":
-            self._print_message("Enter account holder name:")
+            self._print_message("Enter account holder name:", MessageType.INFO)
             name = self.read_line()
             if not name:
-                self._print_message("Error: Name cannot be empty.")
+                self._print_message("Error: Name cannot be empty.", MessageType.ERROR)
                 return
 
         # Load accounts (Requirement: reads in current bank accounts file)
@@ -248,12 +466,9 @@ class ATMFrontEnd:
         stype = SessionType.ADMIN if session_input == "admin" else SessionType.STANDARD
         self.session.login(stype, name)
         
-        login_msg = f"Successfully logged in as {session_input}"
-        if name:
-            login_msg += f" (User: {name})"
-        login_msg += "."
+        login_msg = f"Successfully logged in as an admin." if self.session.is_admin() else f"Successfully logged in as '{name}'."
         
-        self._print_message(login_msg)
+        self._print_message(login_msg, MessageType.SUCCESS)
     
     def _handle_logout(self) -> None:
         """
@@ -265,13 +480,13 @@ class ATMFrontEnd:
             - Resets the session state (logs out).
         """
         if not self.session.is_logged_in():
-            self._print_message("Error: Not logged in.")
+            self._print_message("Error: Not logged in.", MessageType.ERROR)
             return
 
         self._write_transaction_file()
         self.session.logout()
         self.transaction_list.clear() # Clear transactions for next session
-        self._print_message("Successfully logged out.")
+        self._print_message("Successfully logged out.", MessageType.SUCCESS)
         
     def _write_transaction_file(self) -> None:
         """
@@ -293,7 +508,7 @@ class ATMFrontEnd:
                     if line:
                         f.write(line + "\n")
         except IOError as e:
-            self._print_message(f"Error writing transaction file: {e}")
+            self._print_message(f"Error writing transaction file: {e}", MessageType.ERROR)
     
     def _handle_withdrawal(self) -> None:
         """
@@ -311,20 +526,23 @@ class ATMFrontEnd:
         # 1. Account Holder Name
         holder_name = self.session.current_user
         if self.session.is_admin():
-            self._print_message("Enter account holder name:")
+            self._print_message("Enter account holder name:", MessageType.INFO)
             holder_name = self.read_line()
             
         # 2. Account Number
-        self._print_message("Enter account number:")
+        self._print_message("Enter account number:", MessageType.INFO)
         account_number = self.read_line()
         
         # 3. Amount
-        self._print_message("Enter amount to withdraw:")
+        self._print_message("Enter amount to withdraw:", MessageType.INFO)
         try:
             amount_str = self.read_line()
+            if amount_str is None:
+                self._print_message("Error: Amount cannot be empty.", MessageType.ERROR)
+                return
             amount = float(amount_str)
         except ValueError:
-            self._print_message("Error: Invalid amount format.")
+            self._print_message("Error: Invalid amount format.", MessageType.ERROR)
             return
 
         # --- Validation ---
@@ -332,26 +550,26 @@ class ATMFrontEnd:
         # Check if account exists
         account = self.account_repository.find_account(account_number)
         if account is None:
-            self._print_message("Error: Account not found.")
+            self._print_message("Error: Account not found.", MessageType.ERROR)
             return
             
         # Check ownership
         # "Bank account must be a valid account for the account holder currently logged in."
         if account.holder_name != holder_name:
-            self._print_message("Error: Account holder name does not match.")
+            self._print_message("Error: Account holder name does not match.", MessageType.ERROR)
             return
 
         # Check session limit (Standard only)
         if not self.session.is_admin():
             if self.session.withdrawn_amount + amount > 500.00:
-                self._print_message("Error: Session withdrawal limit ($500) exceeded.")
+                self._print_message("Error: Session withdrawal limit ($500) exceeded.", MessageType.ERROR)
                 return
                 
         # Check balance
         # "Account balance must be at least $0.00 after withdrawal"
         # Note: We use the snapshot balance loaded at start of session.
         if account.balance - amount < 0.00:
-            self._print_message("Error: Insufficient funds.")
+            self._print_message("Error: Insufficient funds.", MessageType.ERROR)
             return
 
         # --- Execution ---
@@ -364,7 +582,7 @@ class ATMFrontEnd:
         if not self.session.is_admin():
             self.session.withdrawn_amount += amount
             
-        self._print_message(f"Withdrawal of ${amount:.2f} successful.")
+        self._print_message(f"Withdrawal of ${amount:.2f} successful.", MessageType.SUCCESS)
 
     def _handle_deposit(self) -> None:
         """
@@ -380,38 +598,38 @@ class ATMFrontEnd:
         # 1. Account Holder Name
         holder_name = self.session.current_user
         if self.session.is_admin():
-            self._print_message("Enter account holder name:")
+            self._print_message("Enter account holder name:", MessageType.INFO)
             holder_name = self.read_line()
             
         # 2. Account Number
-        self._print_message("Enter account number:")
+        self._print_message("Enter account number:", MessageType.INFO)
         account_number = self.read_line()
         
         # 3. Amount
-        self._print_message("Enter amount to deposit:")
+        self._print_message("Enter amount to deposit:", MessageType.INFO)
         try:
             amount_str = self.read_line()
             amount = float(amount_str)
         except ValueError:
-            self._print_message("Error: Invalid amount format.")
+            self._print_message("Error: Invalid amount format.", MessageType.ERROR)
             return
 
         # --- Validation ---
         
         account = self.account_repository.find_account(account_number)
         if account is None:
-            self._print_message("Error: Account not found.")
+            self._print_message("Error: Account not found.", MessageType.ERROR)
             return
             
         if account.holder_name != holder_name:
-            self._print_message(f"Error: Account holder name '{holder_name}' does not match '{account.holder_name}'.")
+            self._print_message(f"Error: Account holder name '{holder_name}' does not match '{account.holder_name}'.", MessageType.ERROR)
             return
 
         # --- Execution ---
         
         transaction = Deposit(holder_name, account_number, amount)
         self.transaction_list.append(transaction)
-        self._print_message(f"Deposit of ${amount:.2f} successful.")
+        self._print_message(f"Deposit of ${amount:.2f} successful.", MessageType.SUCCESS)
 
     def _handle_paybill(self) -> None:
         """
@@ -428,51 +646,51 @@ class ATMFrontEnd:
         """
         # 1. Account Holder Name
         holder_name = self.session.current_user
-        if self.session.is_admin():
-            self._print_message("Enter account holder name:")
+        if not self.session.is_admin():
+            self._print_message("Enter account holder name:", MessageType.INFO)
             holder_name = self.read_line()
             
         # 2. Account Number
-        self._print_message("Enter account number:")
+        self._print_message("Enter account number:", MessageType.INFO)
         account_number = self.read_line()
         
         # 3. Company
-        self._print_message("Enter company name (EC, CQ, FI):")
+        self._print_message("Enter company name (EC, CQ, FI):", MessageType.INFO)
         company = self.read_line()
         
         # 4. Amount
-        self._print_message("Enter amount to pay:")
+        self._print_message("Enter amount to pay:", MessageType.INFO)
         try:
             amount_str = self.read_line()
             amount = float(amount_str)
         except ValueError:
-            self._print_message("Error: Invalid amount format.")
+            self._print_message("Error: Invalid amount format.", MessageType.ERROR)
             return
 
         # --- Validation ---
         
         account = self.account_repository.find_account(account_number)
         if account is None:
-            self._print_message("Error: Account not found.")
+            self._print_message("Error: Account not found.", MessageType.ERROR)
             return
             
         if account.holder_name != holder_name:
-            self._print_message("Error: Account holder name does not match.")
+            self._print_message("Error: Account holder name does not match.", MessageType.ERROR)
             return
             
         if company not in Paybill.COMPANIES:
-             self._print_message("Error: Invalid company.")
-             return
+            self._print_message("Error: Invalid company.", MessageType.ERROR)
+            return
 
         # Check session limit (Standard only)
         if not self.session.is_admin():
             if self.session.paybill_amount + amount > 2000.00:
-                self._print_message("Error: Session paybill limit ($2000) exceeded.")
+                self._print_message("Error: Session paybill limit ($2000) exceeded.", MessageType.ERROR)
                 return
                 
         # Check balance
         if account.balance - amount < 0.00:
-            self._print_message("Error: Insufficient funds.")
+            self._print_message("Error: Insufficient funds.", MessageType.ERROR)
             return
 
         # --- Execution ---
@@ -483,13 +701,30 @@ class ATMFrontEnd:
         if not self.session.is_admin():
             self.session.paybill_amount += amount
             
-        self._print_message(f"Paybill of ${amount:.2f} to {company} successful.")
+        self._print_message(f"bill of ${amount:.2f} to {company}: '{Paybill.COMPANIES[company]}' successful.", MessageType.SUCCESS)
             
-    def _print_message(self, message):
+    def _print_message(self, message, message_type: MessageType = MessageType.NORMAL) -> None:
         """
         Helper method to print a message to the console
         """
-        print(message)
+        override_color = False # Set to true to disable color for all messages.
+        colors = {
+        "red": "\033[31m",
+        "green": "\033[32m",
+        "yellow": "\033[33m",
+        "cyan": "\033[36m",
+        "gray": "\033[90m",
+        "white": "\033[37m"
+        }
+        reset = "\033[0m"
+        
+        color_name = message_type.value if isinstance(message_type, MessageType) else None
+        color_code = colors.get(color_name, "")
+        
+        if color_code and not override_color:
+            print(f"{color_code}{message}{reset}")
+        else:
+            print(f"{message}")
 
 def main():
     """
