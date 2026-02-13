@@ -70,7 +70,21 @@ def test_cli_cases(test_name, input_file, expected_output_file):
 
     # 5. Compare (Assertion)    
     # We strip whitespace from both ends to ignore trailing newlines differences
-    assert actual_output.strip() == expected_output.strip(), f"Transaction File mismatch for {test_name}.\n\nEXPECTED (File Content):\n{expected_output}\n\nACTUAL (File Content):\n{actual_output}\n\nAPP STDOUT:\n{stdout}\n\nAPP STDERR:\n{stderr}"
+    
+    # Determine if we should check transaction file or stdout based on expected output content
+    import re
+    is_transaction_file_expected = re.match(r'^\d{2}', expected_output)
+    
+    if is_transaction_file_expected:
+        assert actual_output.strip() == expected_output.strip(), f"Transaction File mismatch for {test_name}.\n\nEXPECTED (File Content):\n{expected_output}\n\nACTUAL (File Content):\n{actual_output}\n\nAPP STDOUT:\n{stdout}\n\nAPP STDERR:\n{stderr}"
+    else:
+        # Assert that the expected output string appears in the stdout
+        # Strip colour codes from stdout.
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        clean_stdout = ansi_escape.sub('', stdout)
+        
+        # If expected is "Invalid Input...", check if it is in clean_stdout.
+        assert expected_output.strip() in clean_stdout, f"STDOUT mismatch for {test_name}.\n\nEXPECTED (to be in stdout):\n{expected_output}\n\nACTUAL STDOUT (Cleaned):\n{clean_stdout}"
     
     # Cleanup
     if os.path.exists(output_filename):

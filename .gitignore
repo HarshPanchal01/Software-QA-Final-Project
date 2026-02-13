@@ -15,3 +15,4 @@ env/
 .pytest_cache/
 *.log
 *.egg-info/
+bank_account_transaction_file.txt

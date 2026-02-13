@@ -72,7 +72,7 @@ class Transfer(Transaction):
         super().__init__("02", account_holder, account_number, amount)
         self.to_account_number = to_account_number
     
-    def to_file_record(self) -> str: return super().to_file_record()
+    def to_file_record(self) -> str: return self._format_record(self.to_account_number)
     
 class Paybill(Transaction):
     """
@@ -110,7 +110,7 @@ class Create(Transaction):
         super().__init__("05", account_holder, "00000", initial_balance)
         self.initial_balance = initial_balance
     
-    def to_file_record(self) -> str: return super().to_file_record()
+    def to_file_record(self) -> str: return self._format_record("     ")
     
 class Delete(Transaction):
     """
@@ -147,7 +147,7 @@ class EndOfSession(Transaction):
     Represents the End of Session marker (Code 00).
     Intention: Marks the end of the transaction file.
     """
-    def __init__(self):
-        super().__init__("00", "END OF FILE", "00000", 0.0)
+    def __init__(self, account_holder=""):
+        super().__init__("00", account_holder, "00000", 0.0)
     
     def to_file_record(self) -> str: return super().to_file_record()

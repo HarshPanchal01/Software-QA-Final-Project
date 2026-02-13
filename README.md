@@ -94,7 +94,7 @@ NNNNN_AAAAAAAAAAAAAAAAAAAA_S_PPPPPPPP
 - `AAAAAAAAAAAAAAAAAAAA`: account holder name (20 characters max, left justified with spaces)
 - `S`: status (active `A` or disabled `D`)
 - `PPPPPPPP`: balance (8 characters max, e.g. `01000.00`)
-- `_`: is a space for parssing
+- `_`: is a space for parsing
 
 The bank accounts records file ends with a special bank account to demarcate the end of the file:
 
@@ -114,7 +114,7 @@ CC_AAAAAAAAAAAAAAAAAAAA_NNNNN_PPPPPPPP_MM
 - `NNNNN`: 5 digit account number, right justified with zeroes (e.g. 00023)
 - `PPPPPPPP`: amount (`00000000` when amount is zero)
 - `MM`: transaction-specific miscellaneous data
-- `_`: is a space for parssing
+- `_`: is a space for parsing
 
 Transaction codes used by Phase 2:
 

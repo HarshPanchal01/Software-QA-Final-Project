@@ -22,7 +22,7 @@ Usage:
 from src.front_end.session import Session
 from src.front_end.repository import AccountRepository
 from src.front_end.models import SessionType
-from src.front_end.models import MessageType
+from src.front_end.models import MessageType, AccountStatus, AccountPlan
 from src.front_end.transactions import (
     Withdrawal, Transfer, Paybill, Deposit, Create, Delete, Disable, ChangePlan, EndOfSession
 )
@@ -124,7 +124,7 @@ class ATMFrontEnd:
         
         # ignore command if it doesn't exist
         if command_lower not in self.COMMANDS:
-            self._print_message(f"Error: command '{command}' does not exist. Type 'help' for a list of commands.", MessageType.ERROR)
+            self._print_message("Invalid Input. Please Enter Again.", MessageType.ERROR)
             return
 
         # Handle login if not already logged in
@@ -251,11 +251,19 @@ class ATMFrontEnd:
         if from_account.holder_name != holder_name:
             self._print_message(f"Error: Account number {from_account_number} does not belong to holder {holder_name}.", MessageType.ERROR)
             return
+            
+        if not from_account.is_active():
+            self._print_message("Error: Source account is disabled.", MessageType.ERROR)
+            return
 
         # validate destination account exists 
         to_account = self.account_repository.find_account(to_account_number)
         if to_account is None:
             self._print_message("Error: Destination account not found.", MessageType.ERROR)
+            return
+            
+        if not to_account.is_active():
+            self._print_message("Error: Destination account is disabled.", MessageType.ERROR)
             return
 
         # validate session transfer limit (Standard only)
@@ -278,6 +286,9 @@ class ATMFrontEnd:
 
         if not self.session.is_admin():
             self.session.transferred_amount += amount
+            
+        # Update in-memory balance
+        from_account.balance -= amount
 
         self._print_message(f"Transfer of ${amount:.2f} successful.", MessageType.SUCCESS)
 
@@ -355,6 +366,10 @@ class ATMFrontEnd:
         # Transaction
         transaction = Delete(holder_name, account_number)
         self.transaction_list.append(transaction)
+        
+        # Update in-memory state
+        self.account_repository.delete(account_number)
+        
         self._print_message(f"Account {account_number} belonging to holder '{holder_name}' has been deleted.", MessageType.SUCCESS)
 
     def _handle_disable(self): 
@@ -392,6 +407,10 @@ class ATMFrontEnd:
         # Transaction
         transaction = Disable(holder_name, account_number)
         self.transaction_list.append(transaction)
+        
+        # Update in-memory state
+        account.status = AccountStatus.DISABLED
+        
         self._print_message(f"Account {account_number} has been disabled.", MessageType.SUCCESS)
         
     def _handle_changeplan(self): 
@@ -429,6 +448,9 @@ class ATMFrontEnd:
         # Transaction
         transaction = ChangePlan(holder_name, account_number)
         self.transaction_list.append(transaction)
+        
+        account.plan = AccountPlan.NON_STUDENT
+        
         self._print_message(f"Account {account_number} plan has been changed.", MessageType.SUCCESS)
             
     def _handle_login(self) -> None:
@@ -445,12 +467,15 @@ class ATMFrontEnd:
             self._print_message("Error: Already logged in.", MessageType.ERROR)
             return
 
-        self._print_message("Enter session type (standard/admin):", MessageType.INFO)
-        session_input = self.read_line()
-        
-        if session_input not in ["standard", "admin"]:
+        session_input = ""
+        while True:
+            self._print_message("Enter session type (standard/admin):", MessageType.INFO)
+            session_input = self.read_line()
+            
+            if session_input in ["standard", "admin"]:
+                break
+            
             self._print_message("Error: Invalid session type.", MessageType.ERROR)
-            return
             
         name = ""
         if session_input == "standard":
@@ -498,15 +523,17 @@ class ATMFrontEnd:
             - Writes each transaction's formatted string to the output file.
         """
         # Add End of Session transaction
-        self.transaction_list.append(EndOfSession())
+        self.transaction_list.append(EndOfSession(self.session.current_user))
         
         output_filename = "bank_account_transaction_file.txt"
         try:
             with open(output_filename, "w") as f:
+                print("Daily Transaction File Content:")
                 for t in self.transaction_list:
                     line = t.to_file_record()
                     if line:
                         f.write(line + "\n")
+                        print(line)
         except IOError as e:
             self._print_message(f"Error writing transaction file: {e}", MessageType.ERROR)
     
@@ -558,6 +585,10 @@ class ATMFrontEnd:
         if account.holder_name != holder_name:
             self._print_message("Error: Account holder name does not match.", MessageType.ERROR)
             return
+            
+        if not account.is_active():
+            self._print_message("Error: Account is disabled.", MessageType.ERROR)
+            return
 
         # Check session limit (Standard only)
         if not self.session.is_admin():
@@ -581,6 +612,9 @@ class ATMFrontEnd:
         # Update session totals (Standard only)
         if not self.session.is_admin():
             self.session.withdrawn_amount += amount
+            
+        # Update in-memory balance to enforce constraints within the session
+        account.balance -= amount
             
         self._print_message(f"Withdrawal of ${amount:.2f} successful.", MessageType.SUCCESS)
 
@@ -624,6 +658,10 @@ class ATMFrontEnd:
         if account.holder_name != holder_name:
             self._print_message(f"Error: Account holder name '{holder_name}' does not match '{account.holder_name}'.", MessageType.ERROR)
             return
+            
+        if not account.is_active():
+            self._print_message("Error: Account is disabled.", MessageType.ERROR)
+            return
 
         # --- Execution ---
         
@@ -646,7 +684,7 @@ class ATMFrontEnd:
         """
         # 1. Account Holder Name
         holder_name = self.session.current_user
-        if not self.session.is_admin():
+        if self.session.is_admin():
             self._print_message("Enter account holder name:", MessageType.INFO)
             holder_name = self.read_line()
             
@@ -678,6 +716,10 @@ class ATMFrontEnd:
             self._print_message("Error: Account holder name does not match.", MessageType.ERROR)
             return
             
+        if not account.is_active():
+            self._print_message("Error: Account is disabled.", MessageType.ERROR)
+            return
+            
         if company not in Paybill.COMPANIES:
             self._print_message("Error: Invalid company.", MessageType.ERROR)
             return
@@ -700,6 +742,9 @@ class ATMFrontEnd:
         
         if not self.session.is_admin():
             self.session.paybill_amount += amount
+            
+        # Update in-memory balance
+        account.balance -= amount
             
         self._print_message(f"bill of ${amount:.2f} to {company}: '{Paybill.COMPANIES[company]}' successful.", MessageType.SUCCESS)
             
