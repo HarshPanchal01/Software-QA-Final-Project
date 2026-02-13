@@ -102,3 +102,10 @@ class AccountRepository:
             bool: True if the account exists, False otherwise.
         """
         return account_number in self.accounts
+        
+    def delete(self, account_number: str) -> None:
+        """
+        Removes an account from the repository.
+        """
+        if account_number in self.accounts:
+            del self.accounts[account_number]
