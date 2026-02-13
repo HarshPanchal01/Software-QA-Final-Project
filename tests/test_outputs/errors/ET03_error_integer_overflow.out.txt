@@ -1,11 +1,1 @@
-Welcome to the QA Bank System (qabank)
-Type 'login' to begin session.
-Enter session type (standard/admin):
-Enter account holder name:
-Successfully logged in as 'John Doe'.
-Enter account number:
-Enter amount to withdraw:
-Error: Session withdrawal limit ($500) exceeded.
-Daily Transaction File Content:
-00 John Doe             00000 00000000  
-Successfully logged out.
+00 John Doe             00000 00000000   

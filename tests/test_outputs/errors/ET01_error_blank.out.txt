@@ -1,3 +1,0 @@
-Welcome to the QA Bank System (qabank)
-Type 'login' to begin session.
-Exiting QA Bank System.

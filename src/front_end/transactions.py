@@ -49,16 +49,8 @@ class Transaction():
         
         amount = "00000000" if self.amount == 0.0 else f"{self.amount:08.2f}"
         
-        if not miscellaneous:
-            misc_str = "  "
-            sep = ""
-        else:
-            misc_str = miscellaneous
-            # If miscellaneous is whitespace only (like Create's 5 spaces), we don't add a separator
-            # effectively treating it like padding.
-            sep = " " if miscellaneous.strip() else ""
-        
-        return f"{code} {name} {number} {amount}{sep}{misc_str}"
+        misc = "  " if miscellaneous.strip() == "" else miscellaneous[:2].ljust(2, ' ')
+        return f"{code} {name} {number} {amount} {misc}"
 
 
 class Withdrawal(Transaction):
