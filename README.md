@@ -94,7 +94,7 @@ NNNNN_AAAAAAAAAAAAAAAAAAAA_S_PPPPPPPP
 - `AAAAAAAAAAAAAAAAAAAA`: account holder name (20 characters max, left justified with spaces)
 - `S`: status (active `A` or disabled `D`)
 - `PPPPPPPP`: balance (8 characters max, e.g. `01000.00`)
-- `_`: is a space for parsing
+- `_`: space for parsing
 
 The bank accounts records file ends with a special bank account to demarcate the end of the file:
 
@@ -114,7 +114,7 @@ CC_AAAAAAAAAAAAAAAAAAAA_NNNNN_PPPPPPPP_MM
 - `NNNNN`: 5 digit account number, right justified with zeroes (e.g. 00023)
 - `PPPPPPPP`: amount (`00000000` when amount is zero)
 - `MM`: transaction-specific miscellaneous data
-- `_`: is a space for parsing
+- `_`: space for parsing
 
 Transaction codes used by Phase 2:
 
@@ -139,13 +139,13 @@ To test the application manually:
 1.  Ensure a `bank_accounts.txt` file exists in your current directory.
     *   *Sample content:*
         ```text
-        12345 User Name            A 00500.00
-        99999 Admin User           A 00000.00
+        12345 John Doe             A 01000.00
+        22222 Bob Smith            A 00010.00
         00000 END_OF_FILE          A 00000.00
         ```
 2.  Run `qabank`.
 3.  Type `login` to start a session.
-4.  Type `help` to see available commands to execute.
+4.  Type `help` to see available commands.
 
 ### Automated Testing / Demonstration
 To run all test cases from Phase 1 against the current build and see the output in the console:
