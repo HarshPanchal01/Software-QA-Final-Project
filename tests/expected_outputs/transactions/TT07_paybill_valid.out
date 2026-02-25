@@ -1,0 +1,13 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Enter account holder name:
+Successfully logged in as 'John Doe'.
+Enter account number:
+Enter company name (EC, CQ, FI):
+Enter amount to pay:
+bill of $400.00 to EC: 'The Bright Light Electric Company' successful.
+Daily Transaction File Content:
+03 John Doe             12345 00400.00 EC
+00 John Doe             00000 00000000   
+Successfully logged out.

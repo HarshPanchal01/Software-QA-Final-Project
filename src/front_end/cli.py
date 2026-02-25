@@ -48,10 +48,12 @@ class ATMFrontEnd:
     
     PRIVELEGED_COMMANDS = {"create", "delete", "disable", "changeplan"} # admin only commands
     
-    def __init__(self):
+    def __init__(self, accounts_file: str = "bank_accounts.txt", transaction_file: str = "bank_account_transaction_file.txt"):
         self.session = Session()
         self.account_repository = AccountRepository()
         self.transaction_list = []
+        self.accounts_file = accounts_file
+        self.transaction_file = transaction_file
             
     def start(self) -> None:
         """
@@ -235,9 +237,8 @@ class ATMFrontEnd:
         # Add End of Session transaction
         self.transaction_list.append(EndOfSession(self.session.current_user))
         
-        output_filename = "bank_account_transaction_file.txt"
         try:
-            with open(output_filename, "w") as f:
+            with open(self.transaction_file, "w") as f:
                 print("Daily Transaction File Content:")
                 for t in self.transaction_list:
                     line = t.to_file_record()
@@ -748,7 +749,7 @@ class ATMFrontEnd:
                 return
 
         # Load accounts (Requirement: reads in current bank accounts file)
-        self.account_repository.load_from_file(self.ACCOUNTS_FILE)
+        self.account_repository.load_from_file(self.accounts_file)
         
         stype = SessionType.ADMIN if session_input == "admin" else SessionType.STANDARD
         self.session.login(stype, name)
@@ -776,11 +777,20 @@ class ATMFrontEnd:
         self.transaction_list.clear() # Clear transactions for next session
         self._print_message("Successfully logged out.", MessageType.SUCCESS)
 
+import sys
+
 def main():
     """
     Entry point for the Banking System Front End.
     """
-    app = ATMFrontEnd()
+    accounts_file = "bank_accounts.txt"
+    transaction_file = "bank_account_transaction_file.txt"
+    
+    if len(sys.argv) >= 3:
+        accounts_file = sys.argv[1]
+        transaction_file = sys.argv[2]
+        
+    app = ATMFrontEnd(accounts_file, transaction_file)
     app.start()
 
 if __name__ == "__main__":

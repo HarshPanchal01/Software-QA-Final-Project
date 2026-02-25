@@ -16,3 +16,5 @@ env/
 *.log
 *.egg-info/
 bank_account_transaction_file.txt
+tests/actual_outputs/
+validation_results.txt

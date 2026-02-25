@@ -1,0 +1,11 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Enter account holder name:
+Successfully logged in as 'John Doe'.
+Error: 'create' is an admin-only command.
+Invalid Input. Please Enter Again.
+Invalid Input. Please Enter Again.
+Daily Transaction File Content:
+00 John Doe             00000 00000000   
+Successfully logged out.

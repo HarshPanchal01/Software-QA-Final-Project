@@ -1,0 +1,10 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Successfully logged in as an admin.
+Enter account holder name:
+Enter account number:
+Error: Account number 12345 does not belong to holder Peter Parker.
+Daily Transaction File Content:
+00                      00000 00000000   
+Successfully logged out.

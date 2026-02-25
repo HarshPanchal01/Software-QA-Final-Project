@@ -1,0 +1,15 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Successfully logged in as an admin.
+Enter account holder name:
+Enter initial balance:
+Account of holder 'New Username' with $100.00 has been created.
+Enter account holder name:
+Enter account number:
+Enter amount to withdraw:
+Error: Account holder name does not match.
+Daily Transaction File Content:
+05 New Username         00000 00100.00   
+00                      00000 00000000   
+Successfully logged out.

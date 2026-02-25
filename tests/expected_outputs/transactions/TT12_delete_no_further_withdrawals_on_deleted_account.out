@@ -1,0 +1,15 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Successfully logged in as an admin.
+Enter account holder name:
+Enter account number:
+Account 12345 belonging to holder 'John Doe' has been deleted.
+Enter account holder name:
+Enter account number:
+Enter amount to withdraw:
+Error: Account not found.
+Daily Transaction File Content:
+06 John Doe             12345 00000000   
+00                      00000 00000000   
+Successfully logged out.

@@ -43,12 +43,16 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### 3. Usage (Phase 2 - Front End)
+### 3. Usage (Phase 2 & 3 - Front End)
 
 Once installed (via `pip install -e .`), you can run the application directly from your terminal:
 
 ```bash
+# Basic usage (defaults to bank_accounts.txt and bank_account_transaction_file.txt)
 qabank
+
+# Phase 3 usage with explicit input and output files
+qabank <input_accounts_file.txt> <output_transaction_file.atf>
 ```
 
 ## Input/Output (Phase 2)
@@ -147,19 +151,20 @@ To test the application manually:
 3.  Type `login` to start a session.
 4.  Type `help` to see available commands.
 
-### Automated Testing / Demonstration
-To run all test cases from Phase 1 against the current build and see the output in the console:
+### Automated Testing (Phase 3)
+In Phase 3, the testing infrastructure was expanded to validate the Front End against the Phase 1 test cases. We have specific scripts to automate execution and validation.
 
+To run all test cases and generate the actual terminal and transaction outputs:
 ```bash
-./run_all_tests.sh
+./run_tests.sh
 ```
-*Note: This script runs the application against all `.in.txt` files in `tests/test_inputs/` sequentially. It is useful for verifying that the application handles all input scenarios without crashing.*
+*Note: This script reads all `.in.txt` files from `tests/test_inputs/` and deposits the results into `tests/actual_outputs/`.*
 
-To run the formal test suite (verification against expected output):
+To validate the generated actual outputs against the expected outputs:
 ```bash
-pytest
+./validate_tests.sh
 ```
-*(Note: `pytest` will currently fail because the UI output prompts (e.g., Welcome messages, Input Prompts, etc.) do not match the strict Phase 1 output files which expect only transaction logs.)*
+*Note: This script uses `diff` to compare the `.out` (terminal) and `.atf` (transaction) files in `tests/actual_outputs/` against the ground truth files in `tests/expected_outputs/`. It prints a PASS/FAIL report for each test.*
 
 ### 4. Commiting to GitHub repo
  - Please use your own branch and open a pull request into main

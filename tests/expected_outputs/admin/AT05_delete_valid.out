@@ -1,0 +1,11 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Successfully logged in as an admin.
+Enter account holder name:
+Enter account number:
+Account 67890 belonging to holder 'Jane Doe' has been deleted.
+Daily Transaction File Content:
+06 Jane Doe             67890 00000000   
+00                      00000 00000000   
+Successfully logged out.

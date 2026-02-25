@@ -1,0 +1,7 @@
+Welcome to the QA Bank System (qabank)
+Type 'login' to begin session.
+Enter session type (standard/admin):
+Successfully logged in as an admin.
+Daily Transaction File Content:
+00                      00000 00000000   
+Successfully logged out.
