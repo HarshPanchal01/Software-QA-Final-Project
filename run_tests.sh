@@ -3,9 +3,16 @@
 # run_tests.sh - Script to automate testing of the qabank application
 # Requirements: Phase 3 (5) - Run program on each input file, create corresponding output files (terminal and transaction)
 
+GREEN=$'\033[0;32m'
+RED=$'\033[0;31m'
+YELLOW=$'\033[1;33m'
+CYAN=$'\033[0;36m'
+GRAY=$'\033[1;30m'
+DEFAULT=$'\033[0m'
+
 # Ensure qabank is installed
 if ! command -v qabank &> /dev/null; then
-    echo "Error: 'qabank' command not found. Please run 'pip install -e .'"
+    echo -e "${RED}Error: 'qabank' command not found. Please run ${GRAY}pip install -e .${DEFAULT}"
     exit 1
 fi
 
@@ -13,7 +20,7 @@ INPUT_DIR="tests/test_inputs"
 OUTPUT_DIR="tests/actual_outputs"
 ACCOUNTS_FILE="bank_accounts.txt"
 
-echo "Starting automated tests..."
+echo "${CYAN}Starting automated tests...${DEFAULT}"
 
 # Clean or create output directory
 if [ -d "$OUTPUT_DIR" ]; then
@@ -35,7 +42,7 @@ find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
     actual_out="$OUTPUT_DIR/$dir_name/$base_name.out"
     actual_atf="$OUTPUT_DIR/$dir_name/$base_name.atf"
     
-    echo "Running test: $rel_path"
+    echo "${CYAN}Running test: ${GRAY}$rel_path${DEFAULT}"
     
     # Remove old transaction file if exists locally just in case
     rm -f "$actual_atf"
@@ -53,4 +60,4 @@ find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
     fi
 done
 
-echo "Automated testing completed. Outputs saved to $OUTPUT_DIR/"
+echo "${CYAN}Automated testing completed. Outputs saved to ${GRAY}$OUTPUT_DIR/${DEFAULT}"
