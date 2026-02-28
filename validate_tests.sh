@@ -82,16 +82,19 @@ _files_match() {
 }
 
 # gather all test names using all files included in testing (.out, .atf, .etf)
-mapfile -t TEST_CASES < <(
-  {
-    find "$ACTUAL_DIR"   -type f \( -name "*.out" -o -name "*.atf" \) -print
-    find "$EXPECTED_DIR" -type f \( -name "*.out" -o -name "*.etf" \) -print
-  } \
-  | sed -E "s|^$ACTUAL_DIR/||" \
-  | sed -E "s|^$EXPECTED_DIR/||" \
-  | sed -E 's/\.(out|atf|etf)$//' \
-  | sort -u
-  )
+TEST_CASES=()
+while IFS= read -r line; do
+    TEST_CASES+=("$line")
+done < <(
+    {
+        find "$ACTUAL_DIR"   -type f \( -name "*.out" -o -name "*.atf" \) -print
+        find "$EXPECTED_DIR" -type f \( -name "*.out" -o -name "*.etf" \) -print
+    } \
+    | sed -E "s|^$ACTUAL_DIR/||" \
+    | sed -E "s|^$EXPECTED_DIR/||" \
+    | sed -E 's/\.(out|atf|etf)$//' \
+    | sort -u
+)
 TOTAL_TESTS=${#TEST_CASES[@]}
 
 i=0
