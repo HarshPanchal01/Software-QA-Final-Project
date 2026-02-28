@@ -52,8 +52,22 @@ print_table() {
         # windows powershell
         powershell.exe -NoProfile -Command "\$rows = Import-Csv -Path '.validation_table.tsv' -Delimiter ([char]9); \$rows | Format-Table -AutoSize"
     else
-        # last resort, use basic columns
-        column -t -s $'\t' "$table_file" 2>/dev/null || cat "$table_file"
+        # macOS / Linux: use printf with fixed-width columns to avoid ANSI color alignment issues
+        local max_len=9
+        for row in "${rows[@]}"; do
+            IFS='|' read -r name _ _ _ <<< "$row"
+            [ ${#name} -gt $max_len ] && max_len=${#name}
+        done
+
+        # header + separator
+        printf "%-${max_len}s  %-12s %-12s %s\n" "Test Case" "Terminal" "Transaction" "Overall"
+        printf "%-${max_len}s  %-12s %-12s %s\n" "---------" "--------" "-----------" "-------"
+
+        for row in "${rows[@]}"; do
+            IFS='|' read -r name term trans over <<< "$row"
+            local pad=$((max_len - ${#name}))
+            printf "%s%*s  %-23s %-23s %s\n" "$name" "$pad" "" "$term" "$trans" "$over"
+        done
     fi
 
     # remove temp file
@@ -169,6 +183,7 @@ for test in "${TEST_CASES[@]}"; do
     rows+=("$test_name|$terminal_status|$transaction_status|$overall_status")
 done
 
+echo ""
 print_table
 echo -e "${CYAN}Summary ($total total tests):${DEFAULT} ${GREEN}$pass passed${DEFAULT}, ${RED}$fail failed${DEFAULT}, ${YELLOW}$skip skipped${DEFAULT}"
 
