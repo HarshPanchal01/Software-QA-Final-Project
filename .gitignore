@@ -18,3 +18,11 @@ env/
 bank_account_transaction_file.txt
 tests/actual_outputs/
 validation_results.txt
+
+# PyCharm / IDEs
+.idea/
+.vscode/
+
+# Back End generated outputs
+new_master_accounts.txt
+new_current_accounts.txt
