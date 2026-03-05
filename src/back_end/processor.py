@@ -27,7 +27,14 @@ class BackEndProcessor:
         # 1. Load accounts from old master file
         raw_accounts = read_old_bank_accounts(self.old_master_file)
         self.master_accounts = {
-            acc['account_number']: MasterBankAccount(**acc) for acc in raw_accounts
+            acc['account_number']: MasterBankAccount(
+                account_number=acc['account_number'],
+                holder_name=acc['name'],
+                status=acc['status'],
+                balance=acc['balance'],
+                transaction_count=acc['total_transactions'],
+                plan=acc['plan']
+            ) for acc in raw_accounts
         }
 
         # 2. Read merged transactions
@@ -43,18 +50,17 @@ class BackEndProcessor:
 
     def apply_transaction(self, tx: Transaction) -> None:
         """Applies a single transaction to the corresponding account."""
-        # TODO: Implement transaction application logic with error handling
-        pass
+        tx.apply(self.master_accounts)
 
     def write_current_accounts_file(self, filepath: str) -> None:
         """Outputs the new current accounts file using the provided writer."""
         accounts_list = [
             {
                 'account_number': acc.account_number,
-                'name': acc.name,
+                'name': acc.holder_name,
                 'status': acc.status,
                 'balance': acc.balance,
-                'total_transactions': acc.total_transactions,
+                'total_transactions': acc.transaction_count,
                 'plan': acc.plan
             }
             for acc in self.master_accounts.values()
