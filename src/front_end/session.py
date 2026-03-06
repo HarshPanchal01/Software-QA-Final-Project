@@ -1,4 +1,4 @@
-from .models import SessionType
+from src.shared.bank_accounts import SessionType
 
 class Session:
     """

@@ -20,11 +20,13 @@ Usage:
     or via `python3 -m src.front_end.cli`.
 """
 
+from src.shared.directories import NEW_TRANSACTIONS_DIR, OLD_TRANSACTIONS_DIR, CURRENT_BANK_ACCOUNTS_FILE
 from src.front_end.session import Session
 from src.front_end.repository import AccountRepository
-from src.front_end.models import MessageType, AccountStatus, AccountPlan, SessionType
-from src.front_end.transactions import (
-    Withdrawal, Transfer, Paybill, Deposit, Create, Delete, Disable, ChangePlan, EndOfSession
+from src.shared.auxiliary import MessageType
+from src.shared.bank_accounts import BankAccount, AccountStatus, AccountPlan, SessionType
+from src.shared.transactions import (
+    Transaction, Withdrawal, Transfer, Paybill, Deposit, Create, Delete, Disable, ChangePlan, EndOfSession
 )
 
 class ATMFrontEnd:
@@ -38,8 +40,6 @@ class ATMFrontEnd:
         transaction_list: list of transactions recorded from the current session.
     """
     
-    ACCOUNTS_FILE = "bank_accounts.txt" # path to bank accounts file, used to load accounts to a repository
-    
     # all transactions/commands that can be used in the system
     COMMANDS = {
         "login", "logout", "withdrawal", "transfer", "paybill",
@@ -48,7 +48,7 @@ class ATMFrontEnd:
     
     PRIVELEGED_COMMANDS = {"create", "delete", "disable", "changeplan"} # admin only commands
     
-    def __init__(self, accounts_file: str = "bank_accounts.txt", transaction_file: str = "bank_account_transaction_file.txt"):
+    def __init__(self, accounts_file=None, transaction_file=None):
         self.session = Session()
         self.account_repository = AccountRepository()
         self.transaction_list = []
@@ -80,7 +80,8 @@ class ATMFrontEnd:
             if command is None:
                 continue
             
-            self.process_command(command)
+            if self.process_command(command) is False:
+                break
                
     """
     
@@ -138,19 +139,19 @@ class ATMFrontEnd:
                 self._print_message("You are already logged in. You must logout to login again.", MessageType.WARNING)
             else:
                 self._handle_login()
-            return
+            return True
         
         if command == "help":
             self._handle_help()
-            return
+            return True
 
         if command == "quit":
             if self.session.is_logged_in():
-                self.session.logout() # Ensure we log out to write transaction file if user tries to quit without logging out
+                self._handle_logout() # Ensure we log out to write transaction file if user tries to quit without logging out
             
             self._print_message("Exiting QA Bank System.", MessageType.ACTION)
-            exit(0)
-            return
+            # exit(0)
+            return False
         
         # If not logged in and user hasn't attempted to login, ignore
         if not self.session.is_logged_in():
@@ -160,7 +161,7 @@ class ATMFrontEnd:
         # ignore a privilege command request for a non-admin
         if command in self.PRIVELEGED_COMMANDS and not self.session.is_admin():
             self._print_message(f"Error: '{command}' is an admin-only command.", MessageType.ERROR)
-            return
+            return True
         
         match command:
             case "logout":
@@ -181,6 +182,8 @@ class ATMFrontEnd:
                 self._handle_disable()
             case "changeplan":
                 self._handle_changeplan()
+        
+        return True
             
     def _handle_help(self) -> None:
         """
@@ -234,12 +237,37 @@ class ATMFrontEnd:
             - Iterates through self.transaction_list.
             - Writes each transaction's formatted string to the output file.
         """
+        import os
         # Add End of Session transaction
         self.transaction_list.append(EndOfSession(self.session.current_user))
         
+        if self.transaction_file:
+            # If a specific transaction file was provided via CLI, write directly to it
+            transaction_file_path = self.transaction_file
+            
+            # Ensure its directory exists if it has one
+            dir_name = os.path.dirname(os.path.abspath(transaction_file_path))
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
+        else:
+            new_dir = os.path.join(NEW_TRANSACTIONS_DIR)
+            processed_dir = os.path.join(OLD_TRANSACTIONS_DIR)
+            
+            # Create directories if they don't exist
+            os.makedirs(new_dir, exist_ok=True)
+            os.makedirs(processed_dir, exist_ok=True)
+            
+            # Find the smallest available number for the file name
+            file_num = 1
+            while os.path.exists(os.path.join(new_dir, f"{file_num}.txt")):
+                file_num += 1
+                
+            transaction_file_path = os.path.join(new_dir, f"{file_num}.txt")
+        
         try:
-            with open(self.transaction_file, "w") as f:
+            with open(transaction_file_path, "w") as f:
                 print("Daily Transaction File Content:")
+                # convert each transaction to a file record and write it to the file
                 for t in self.transaction_list:
                     line = t.to_file_record()
                     if line:
@@ -749,7 +777,8 @@ class ATMFrontEnd:
                 return
 
         # Load accounts (Requirement: reads in current bank accounts file)
-        self.account_repository.load_from_file(self.accounts_file)
+        accounts_to_load = self.accounts_file if self.accounts_file else CURRENT_BANK_ACCOUNTS_FILE
+        self.account_repository.load_from_file(accounts_to_load)
         
         stype = SessionType.ADMIN if session_input == "admin" else SessionType.STANDARD
         self.session.login(stype, name)
@@ -783,8 +812,8 @@ def main():
     """
     Entry point for the Banking System Front End.
     """
-    accounts_file = "bank_accounts.txt"
-    transaction_file = "bank_account_transaction_file.txt"
+    accounts_file = None
+    transaction_file = None
     
     if len(sys.argv) >= 3:
         accounts_file = sys.argv[1]
@@ -792,6 +821,7 @@ def main():
         
     app = ATMFrontEnd(accounts_file, transaction_file)
     app.start()
+    exit(0)
 
 if __name__ == "__main__":
     main()

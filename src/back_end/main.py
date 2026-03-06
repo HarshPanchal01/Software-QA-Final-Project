@@ -3,22 +3,20 @@ Entry point for the Back End application.
 """
 import sys
 import argparse
-from src.back_end.processor import BackEndProcessor
+from src.back_end.processor import BackendProcessor
 
 def main():
     """
     Main function to parse arguments and run the backend processor.
     Expected usage:
-        python -m src.back_end.main <old_master_file> <merged_transaction_file>
+        python -m src.back_end.main <old_master_file>
     """
     parser = argparse.ArgumentParser(description="Banking System Back End Processor")
-    parser.add_argument("old_master", help="Path to the Old Master Bank Accounts File")
-    parser.add_argument("merged_transactions", help="Path to the Merged Transaction File")
     
     args = parser.parse_args()
     
     try:
-        processor = BackEndProcessor(args.old_master, args.merged_transactions)
+        processor = BackendProcessor()
         processor.run()
         print("Back End processing completed successfully.")
     except Exception as e:
