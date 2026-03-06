@@ -18,7 +18,7 @@ fi
 
 INPUT_DIR="tests/test_inputs"
 OUTPUT_DIR="tests/actual_outputs"
-ACCOUNTS_FILE="bank_accounts.txt"
+ACCOUNTS_FILE="src/program_data/bank_accounts/current/current_bank_accounts.txt"
 
 echo "${CYAN}Starting automated tests...${DEFAULT}"
 

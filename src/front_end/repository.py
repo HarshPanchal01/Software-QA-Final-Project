@@ -1,5 +1,5 @@
 import os
-from .models import BankAccount, AccountStatus
+from src.shared.bank_accounts import BankAccount, AccountStatus
 
 class AccountRepository:
     """
@@ -34,34 +34,10 @@ class AccountRepository:
         
         with open(filename, 'r') as file:
             for line in file:
-                line = line.strip('\n')
-                
-                # ignores a line that doesn't abide by the 37 character length account requirement
-                if len(line) < 37 or len(line) > 37:
-                    continue
-                
-                # parse account fields
-                # account format (37 chars): NNNNN_AAAAAAAAAAAAAAAAAAAA_S_PPPPPPPP
-                account_number = line[0:5]
-                holder_name = line[6:26].rstrip()
-                status_char = line[27]
-                balance_string = line[29:37]
-                
-                if holder_name == "END_OF_FILE":
+                account = BankAccount.from_record(line)
+                if int(account.account_number) <= 0 or len(account.account_number) > 5:
                     break
-                
-                # convert parsed values to intended typed variables
-                # account_number and holder_name are left as strings
-                status = AccountStatus.ACTIVE if status_char == 'A' else AccountStatus.DISABLED
-                try:
-                    balance = float(balance_string)
-                except ValueError:
-                    balance = 0.0
-                
-                # create the new runtime account
-                account = BankAccount(account_number, holder_name, status, balance)
-                # add the new runtime account to the AccountRepository's accounts
-                self.accounts[account_number] = account
+                self.accounts[account.account_number] = account
     
     def find_account(self, account_number) -> BankAccount | None:
         """
