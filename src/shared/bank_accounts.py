@@ -107,6 +107,14 @@ class BankAccount:
         """
         return self.plan == AccountPlan.STUDENT
 
+    def increment_transaction_count(self) -> None:
+        """Increments the transaction count for this account."""
+        if self.transactions is not None:
+            self.transactions += 1
+
+    def apply_fee(self, fee_amount: float) -> None:
+        """Applies a fee to the account balance."""
+        self.balance -= fee_amount
     
     def to_record(self, format_type: AccountFormat) -> str | None:
         """
