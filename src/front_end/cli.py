@@ -43,7 +43,7 @@ class ATMFrontEnd:
     # all transactions/commands that can be used in the system
     COMMANDS = {
         "login", "logout", "withdrawal", "transfer", "paybill",
-        "deposit", "create", "delete", "disable", "changeplan"
+        "deposit", "create", "delete", "disable", "changeplan", "help", "quit"
     }
 
     PRIVELEGED_COMMANDS = {"create", "delete", "disable", "changeplan"} # admin only commands
