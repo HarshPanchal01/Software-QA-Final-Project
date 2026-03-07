@@ -8,6 +8,10 @@
 
 """
 
+from src.shared.bank_accounts import BankAccount, SessionType
+from src.back_end.fee_calculator import FeeCalculator
+from typing import Dict
+
 class Transaction():
     """
     Abstract base class for all system transactions.
@@ -23,49 +27,27 @@ class Transaction():
         account_number (str): Account number involved in the transaction.
         amount (float): Monetary value associated with the transaction.
         misc (str): Miscellaneous information needed for specific transactions.
+        session_type (SessionType): Session type of the transaction.
     """
-    def __init__(self, transaction_code, account_holder, account_number, amount, misc=""):
+    def __init__(self, transaction_code, account_holder, account_number, amount, misc="", session_type=SessionType.STANDARD):
         self.transaction_code = transaction_code
         self.account_holder = account_holder
         self.account_number = account_number
         self.amount = amount
         self.misc = misc
+        self.session_type = session_type
     
     def to_record(self) -> str:
         """
         Converts the transaction object into a string for the transaction record.
-        
-        Args:
-            miscellaneous (str): Extra info needed for specific transactions.
-
-        Returns:
-            str: The formatted 40-character (plus newline) string record.
         """
         return self._format_record()
     
-    @classmethod
-    def from_record(cls, record: str):
+    @staticmethod
+    def from_record(record: str):
         """
         Converts a string into a transaction object.
-        
-        Args:
-            record (str): The 41 character (plus newline) string record.
         """
-        return cls._unformat_record(record)
-    
-    @classmethod
-    def _unformat_record(cls, record: str):
-        """
-        Converts a string into a transaction object.
-        
-        Args:
-            record (str): The 41 character (plus newline) string record.
-        
-        Warning:
-            Will unformat end of file marker as a transaction.
-            Be sure to handle this (easiest: if code == "00", break)
-        """
-        # ensure record is long enough to prevent index errors
         record = record.ljust(41, ' ')
         
         code = record[0:2]
@@ -74,19 +56,21 @@ class Transaction():
         amount = float(record[30:38])
         misc = record[39:41].strip()
         
-        return cls(code, name, number, amount, misc)
+        if code == "01": return Withdrawal(name, number, amount, misc)
+        elif code == "02": return Transfer(name, number, amount, misc)
+        elif code == "03": return Paybill(name, number, amount, misc)
+        elif code == "04": return Deposit(name, number, amount, misc)
+        elif code == "05": return CreateAccount(name, number, amount, misc)
+        elif code == "06": return DeleteAccount(name, number, amount, misc)
+        elif code == "07": return DisableAccount(name, number, amount, misc)
+        elif code == "08": return ChangePlan(name, number, amount, misc)
+        elif code == "00": return EndOfSession(name, number, amount, misc)
+        else:
+            return Transaction(code, name, number, amount, misc)
 
     def _format_record(self):
         """
         Helper to format the transaction fields into the fixed-width format.
-        
-        Format: CC_AAAAAAAAAAAAAAAAAAAA_NNNNN_PPPPPPPP_MM
-        
-        Args:
-            miscellaneous (str): Extra info needed for specific transactions (e.g., company code).
-            
-        Returns:
-            str: The fully formatted line.
         """
         code = self.transaction_code.zfill(2)
         name = self.account_holder.ljust(20, ' ')[:20]
@@ -98,105 +82,126 @@ class Transaction():
         return f"{code} {name} {number} {amount} {misc}"
 
     def __str__(self):
-        """
-        Standard string representation of the transaction object
-        """
         return str(self.transaction_code) + " " + str(self.account_holder) + " " + str(self.account_number) + " " + str(self.amount) + " " + str(self.misc)
+
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        """Applies the transaction to the master accounts dictionary. To be overridden."""
+        pass
 
 
 class Withdrawal(Transaction):
-    """
-    Represents a withdrawal transaction (Code 01).
-    Intention: Deducts funds from an account.
-    """
-    def __init__(self, account_holder, account_number, amount):
-        super().__init__("01", account_holder, account_number, amount)
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        super().__init__("01", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            acc = master_accounts[self.account_number]
+            if acc.is_active():
+                acc.balance -= self.amount
+                fee = FeeCalculator.calculate(acc.plan)
+                acc.apply_fee(fee)
+                acc.increment_transaction_count()
 
 class Transfer(Transaction):
-    """
-    Represents a transfer transaction (Code 02).
-    Intention: Moves funds from one account to another.
-    """
-    def __init__(self, account_holder, account_number, to_account_number, amount):
-        super().__init__("02", account_holder, account_number, amount, to_account_number)
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        # misc stores the to_account_number
+        super().__init__("02", account_holder, account_number, amount, misc)
     
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        to_account_number = self.misc.strip()
+        if self.account_number in master_accounts and to_account_number in master_accounts:
+            from_acc = master_accounts[self.account_number]
+            to_acc = master_accounts[to_account_number]
+            if from_acc.is_active() and to_acc.is_active():
+                from_acc.balance -= self.amount
+                to_acc.balance += self.amount
+                fee = FeeCalculator.calculate(from_acc.plan)
+                from_acc.apply_fee(fee)
+                from_acc.increment_transaction_count()
     
 class Paybill(Transaction):
-    """
-    Represents a paybill transaction (Code 03).
-    Intention: Pays a bill to a specific company (EC, CQ, FI).
-    """
-    COMPANIES = {
-        "EC": "The Bright Light Electric Company",
-        "CQ": "Credit Card Company",
-        "FI": "Fast Internet, Inc."
-    }
-    
-    def __init__(self, account_holder, account_number, company_name, amount):
-        super().__init__("03", account_holder, account_number, amount, company_name)
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        # misc stores the company name
+        super().__init__("03", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            acc = master_accounts[self.account_number]
+            if acc.is_active():
+                acc.balance -= self.amount
+                fee = FeeCalculator.calculate(acc.plan)
+                acc.apply_fee(fee)
+                acc.increment_transaction_count()
 
 class Deposit(Transaction):
-    """
-    Represents a deposit transaction (Code 04).
-    Intention: Adds funds to an account.
-    """
-    def __init__(self, account_holder, account_number, amount):
-        super().__init__("04", account_holder, account_number, amount)
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        super().__init__("04", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            acc = master_accounts[self.account_number]
+            if acc.is_active():
+                acc.balance += self.amount
+                fee = FeeCalculator.calculate(acc.plan)
+                acc.apply_fee(fee)
+                acc.increment_transaction_count()
     
-class Create(Transaction):
-    """
-    Represents a create transaction (Code 05).
-    Intention: Creates a new bank account with an initial balance.
-    """
-    def __init__(self, account_holder, initial_balance):
-        super().__init__("05", account_holder, "00000", initial_balance)
-        self.initial_balance = initial_balance
+class CreateAccount(Transaction):
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        # account_number might be "00000" in transaction file for create
+        super().__init__("05", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        # Front end sends "00000" for the account number in the record, but in a real backend we might assign one.
+        if self.account_number == "00000" or self.account_number == "":
+            max_num = max([int(num) for num in master_accounts.keys() if num.isdigit() and num != "00000"] + [0])
+            new_acc_num = str(max_num + 1).zfill(5)
+        else:
+            new_acc_num = self.account_number.zfill(5)
+
+        from src.shared.bank_accounts import AccountStatus, AccountPlan
+        master_accounts[new_acc_num] = BankAccount(
+            account_number=new_acc_num,
+            holder_name=self.account_holder,
+            status=AccountStatus.ACTIVE,
+            balance=self.amount,
+            plan=AccountPlan.NON_STUDENT,
+            transactions=0
+        )
     
-class Delete(Transaction):
-    """
-    Represents a delete transaction (Code 06).
-    Intention: Deletes an existing bank account.
-    """
-    def __init__(self, account_holder, account_number):
-        super().__init__("06", account_holder, account_number, 0.0)
+class DeleteAccount(Transaction):
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        super().__init__("06", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            del master_accounts[self.account_number]
     
-class Disable(Transaction):
-    """
-    Represents a disable transaction (Code 07).
-    Intention: Disables an account, preventing further transactions.
-    """
-    def __init__(self, account_holder, account_number):
-        super().__init__("07", account_holder, account_number, 0.0)
+class DisableAccount(Transaction):
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        super().__init__("07", account_holder, account_number, amount, misc)
 
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            from src.shared.bank_accounts import AccountStatus
+            master_accounts[self.account_number].status = AccountStatus.DISABLED
     
 class ChangePlan(Transaction):
-    """
-    Represents a changeplan transaction (Code 08).
-    Intention: Toggles the fee plan (Student <-> Non-Student).
-    """
-    def __init__(self, account_holder, account_number):
-        super().__init__("08", account_holder, account_number, 0.0)
+    def __init__(self, account_holder, account_number, amount, misc=""):
+        super().__init__("08", account_holder, account_number, amount, misc)
     
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        if self.account_number in master_accounts:
+            from src.shared.bank_accounts import AccountPlan
+            acc = master_accounts[self.account_number]
+            if acc.plan == AccountPlan.STUDENT:
+                acc.plan = AccountPlan.NON_STUDENT
+            else:
+                acc.plan = AccountPlan.STUDENT
 
 class EndOfSession(Transaction):
-    """
-    Represents the End of Session marker (Code 00).
-    Intention: Marks the end of the transaction file.
-    """
-    def __init__(self, account_holder=""):
-        super().__init__("00", account_holder, "00000", 0.0)
+    def __init__(self, account_holder="", account_number="00000", amount=0.0, misc=""):
+        super().__init__("00", account_holder, "00000", 0.0, misc)
     
-    def to_file_record(self) -> str: return self._format_record()
+    def apply(self, master_accounts: Dict[str, BankAccount]) -> None:
+        pass

@@ -1,8 +1,10 @@
+import os
 from src.shared.transactions import Transaction
 from src.shared.directories import NEW_TRANSACTIONS_DIR
-import os
 
-def merge_transactions(file_path: str) -> None:
+class MergedTransactions:
+    @staticmethod
+    def merge_transactions(file_path: str) -> None:
         """
         Reads transactions from all transaction files (in src/transactions/new) and merges
             them into a single file
@@ -39,14 +41,13 @@ def merge_transactions(file_path: str) -> None:
                     if saw_EOF:
                         os.remove(f"{NEW_TRANSACTIONS_DIR}{file}")
                 # write EOF marker at the end of the merged transactions file
-                merged_file.writelines("00                      00000 00000000   " + '\n')
+                merged_file.writelines("00                      00000 00000000   \n")
         except Exception as e:
             print(f"ERROR: Unexpected error while merging transactions - {str(e)}")
             return
     
-
-
-def read_merged_transactions(file_path: str) -> list[Transaction]:
+    @staticmethod
+    def read_merged_transactions(file_path: str) -> list[Transaction]:
         """
         Reads transactions from the merged transactions file and returns a list of transaction objects
         """
