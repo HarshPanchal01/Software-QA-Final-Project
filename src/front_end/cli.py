@@ -26,7 +26,7 @@ from src.front_end.repository import AccountRepository
 from src.shared.auxiliary import MessageType
 from src.shared.bank_accounts import BankAccount, AccountStatus, AccountPlan, SessionType
 from src.shared.transactions import (
-    Transaction, Withdrawal, Transfer, Paybill, Deposit, Create, Delete, Disable, ChangePlan, EndOfSession
+    Transaction, Withdrawal, Transfer, Paybill, Deposit, CreateAccount as Create, DeleteAccount as Delete, DisableAccount as Disable, ChangePlan, EndOfSession
 )
 
 class ATMFrontEnd:
@@ -43,10 +43,16 @@ class ATMFrontEnd:
     # all transactions/commands that can be used in the system
     COMMANDS = {
         "login", "logout", "withdrawal", "transfer", "paybill",
-        "deposit", "create", "delete", "disable", "changeplan", "help", "quit"
+        "deposit", "create", "delete", "disable", "changeplan"
     }
-    
+
     PRIVELEGED_COMMANDS = {"create", "delete", "disable", "changeplan"} # admin only commands
+
+    PAYBILL_COMPANIES = {
+        "EC": "The Bright Light Electric Company",
+        "CQ": "Credit Card Company",
+        "FI": "Fast Internet, Inc."
+    }
     
     def __init__(self, accounts_file=None, transaction_file=None):
         self.session = Session()
@@ -269,12 +275,12 @@ class ATMFrontEnd:
                 print("Daily Transaction File Content:")
                 # convert each transaction to a file record and write it to the file
                 for t in self.transaction_list:
-                    line = t.to_file_record()
+                    line = t.to_record()
                     if line:
                         f.write(line + "\n")
                         print(line)
-        except IOError as e:
-            self._print_message(f"Error writing transaction file: {e}", MessageType.ERROR)
+        except Exception as e:
+            self._print_message(f"Error writing to transaction file: {e}", MessageType.ERROR)
             
     
     """
@@ -447,7 +453,7 @@ class ATMFrontEnd:
             return
 
         # Transaction
-        transaction = Transfer(holder_name, from_account_number, to_account_number, amount)
+        transaction = Transfer(holder_name, from_account_number, amount, to_account_number)
         self.transaction_list.append(transaction)
 
         if not self.session.is_admin():
@@ -510,7 +516,7 @@ class ATMFrontEnd:
             self._print_message("Error: Account is disabled.", MessageType.ERROR)
             return
             
-        if company not in Paybill.COMPANIES:
+        if company not in self.PAYBILL_COMPANIES:
             self._print_message("Error: Invalid company.", MessageType.ERROR)
             return
 
@@ -527,7 +533,7 @@ class ATMFrontEnd:
 
         # --- Execution ---
         
-        transaction = Paybill(holder_name, account_number, company, amount)
+        transaction = Paybill(holder_name, account_number, amount, company)
         self.transaction_list.append(transaction)
         
         if not self.session.is_admin():
@@ -536,7 +542,7 @@ class ATMFrontEnd:
         # Update in-memory balance
         account.balance -= amount
             
-        self._print_message(f"bill of ${amount:.2f} to {company}: '{Paybill.COMPANIES[company]}' successful.", MessageType.SUCCESS)
+        self._print_message(f"bill of ${amount:.2f} to {company}: '{self.PAYBILL_COMPANIES[company]}' successful.", MessageType.SUCCESS)
         
     def _handle_deposit(self) -> None:
         """
@@ -625,7 +631,7 @@ class ATMFrontEnd:
             return
 
         # Transaction
-        transaction = Create(holder_name, initial_balance)
+        transaction = Create(holder_name, "00000", initial_balance)
         self.transaction_list.append(transaction)
         self._print_message(f"Account of holder '{holder_name}' with ${initial_balance:.2f} has been created.", MessageType.SUCCESS)
 
@@ -658,7 +664,7 @@ class ATMFrontEnd:
             return
 
         # Transaction
-        transaction = Delete(holder_name, account_number)
+        transaction = Delete(holder_name, account_number, 0.0)
         self.transaction_list.append(transaction)
         
         # Update in-memory state
@@ -697,7 +703,7 @@ class ATMFrontEnd:
             return
         
         # Transaction
-        transaction = Disable(holder_name, account_number)
+        transaction = Disable(holder_name, account_number, 0.0)
         self.transaction_list.append(transaction)
         
         # Update in-memory state
@@ -736,7 +742,7 @@ class ATMFrontEnd:
             return
 
         # Transaction
-        transaction = ChangePlan(holder_name, account_number)
+        transaction = ChangePlan(holder_name, account_number, 0.0)
         self.transaction_list.append(transaction)
         
         account.plan = AccountPlan.NON_STUDENT
