@@ -22,7 +22,8 @@ class MergedTransactions:
         # 2. read and merge transactions
         try:
             # 1. Gather all transaction files in src/transactions/new in order (ascending)
-            transaction_files = sorted([f for f in os.listdir("src/program_data/transactions/new") if f.endswith(".txt")])
+            os.makedirs(NEW_TRANSACTIONS_DIR, exist_ok=True)
+            transaction_files = sorted([f for f in os.listdir(NEW_TRANSACTIONS_DIR) if f.endswith(".txt")])
 
             # 2. In order (ascending), read each file and write its lines into the merged file
             with open(file_path, "w") as merged_file:

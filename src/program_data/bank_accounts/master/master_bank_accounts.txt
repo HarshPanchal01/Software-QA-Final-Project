@@ -1,4 +1,4 @@
-12345 John Doe             A 01049.90 NP 0001
+12345 John Doe             A 01099.80 NP 0002
 22222 Bob Smith            A 00010.00 SP 0000
 56789 Jane Smith           A 00000.00 NP 0000
 67890 Jane Doe             A 00500.00 SP 0000
