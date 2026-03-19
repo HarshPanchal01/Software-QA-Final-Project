@@ -22,3 +22,7 @@ qabank = "src.front_end.cli:main"
 where = ["."]
 include = ["src*"]
 namespaces = false
+
+[tool.pytest.ini_options]
+addopts = "--cov=src.back_end.fee_calculator --cov=src.back_end.merged_transactions --cov-report=term-missing"
+testpaths = ["tests/test_phase5_whitebox.py"]
