@@ -138,7 +138,7 @@ NNNNN_AAAAAAAAAAAAAAAAAAAA_S_PPPPPPPP
 ```
 *(Same as the Master file, but without the Plan type and Transaction count).*
 
-### Automated Testing (Phase 3)
+### Automated Testing (Phase 3 - Front End)
 In Phase 3, the testing infrastructure was expanded to validate the Front End against the Phase 1 test cases. We have specific scripts to automate execution and validation.
 
 To run all test cases and generate the actual terminal and transaction outputs:
@@ -149,6 +149,14 @@ To run all test cases and generate the actual terminal and transaction outputs:
 To validate the generated actual outputs against the expected outputs:
 ```bash
 ./validate_tests.sh
+```
+
+### Unit Testing (Phase 5 - Back End)
+In Phase 5, white-box unit tests were introduced for the Back End to ensure statement, decision, and loop coverage using `pytest` and `pytest-cov`.
+
+To execute the unit tests and view the coverage report:
+```bash
+pytest
 ```
 
 ## Commiting to GitHub repo
