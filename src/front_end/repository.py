@@ -13,7 +13,7 @@ class AccountRepository:
     Attributes:
         accounts (dict): A dictionary mapping account numbers (str) to BankAccount objects.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.accounts = {}
         
     def load_from_file(self, filename) -> None:

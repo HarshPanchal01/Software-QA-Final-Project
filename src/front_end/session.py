@@ -17,7 +17,7 @@ class Session:
         transferred_amount (float): Total amount transferred in this session (limit $1000).
         paybill_amount (float): Total amount paid to bills in this session (limit $2000).
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.logged_in = False
         self.session_type = None
         self.current_user = ""
@@ -46,7 +46,7 @@ class Session:
         self.transferred_amount = 0.0
         self.paybill_amount = 0.0
         
-    def logout(self):
+    def logout(self) -> None:
         """
         Logs the current user out.
         

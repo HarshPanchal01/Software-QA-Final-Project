@@ -1,0 +1,31 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.1, pytest-9.0.2, pluggy-1.6.0 -- C:\otu_comp_sci\courses\csci3060u\Software-QA-Final-Project\sqa_final_project_venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\otu_comp_sci\courses\csci3060u\Software-QA-Final-Project
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collecting ... collected 12 items
+
+tests/test_phase5_whitebox.py::test_FeeCalculator_calculate_student_plan PASSED [  8%]
+tests/test_phase5_whitebox.py::test_FeeCalculator_calculate_non_student_plan PASSED [ 16%]
+tests/test_phase5_whitebox.py::test_FeeCalculator_calculate_unknown_plan PASSED [ 25%]
+tests/test_phase5_whitebox.py::test_merge_transactions_empty_directory PASSED [ 33%]
+tests/test_phase5_whitebox.py::test_merge_transactions_one_valid_no_eof PASSED [ 41%]
+tests/test_phase5_whitebox.py::test_merge_transactions_one_file_first_line_eof PASSED [ 50%]
+tests/test_phase5_whitebox.py::test_merge_transactions_one_file_multiple_then_eof PASSED [ 58%]
+tests/test_phase5_whitebox.py::test_merge_transactions_multiple_files_valid PASSED [ 66%]
+tests/test_phase5_whitebox.py::test_merge_transactions_one_file_no_eof_line PASSED [ 75%]
+tests/test_phase5_whitebox.py::test_merge_transactions_empty_txt_file PASSED [ 83%]
+tests/test_phase5_whitebox.py::test_merge_transactions_non_txt_files PASSED [ 91%]
+tests/test_phase5_whitebox.py::test_merge_transactions_invalid_file_path PASSED [100%]
+
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.1-final-0 _______________
+
+Name                                  Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------
+src\back_end\fee_calculator.py            9      0   100%
+src\back_end\merged_transactions.py      40     12    70%   55-72
+-------------------------------------------------------------------
+TOTAL                                    49     12    76%
+============================= 12 passed in 0.62s ==============================

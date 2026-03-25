@@ -154,7 +154,7 @@ To validate the generated actual outputs against the expected outputs:
 ### Unit Testing (Phase 5 - Back End)
 In Phase 5, white-box unit tests were introduced for the Back End to ensure statement, decision, and loop coverage using `pytest` and `pytest-cov`.
 
-To execute the unit tests and view the coverage report:
+To execute the unit tests and view the coverage report, ensure your virtual environment is activated (*if applicable*), then run:
 ```bash
 pytest
 ```

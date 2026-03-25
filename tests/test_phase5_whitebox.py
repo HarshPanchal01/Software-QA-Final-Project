@@ -5,34 +5,37 @@ from src.back_end.fee_calculator import FeeCalculator
 from src.shared.bank_accounts import AccountPlan
 from src.back_end.merged_transactions import MergedTransactions
 
-# =========================================================
-# Statement Coverage Unit Test Cases
-# Method: FeeCalculator.calculate(plan: AccountPlan) -> float
-# =========================================================
 
-def test_FeeCalculator_calculate_student_plan():
+
+"""
+    Statement Coverage Unit Test Cases
+    Method: FeeCalculator.calculate(plan: AccountPlan) -> float
+"""
+
+def test_FeeCalculator_calculate_student_plan() -> None:
     """Test Case ID: SC1"""
     fee = FeeCalculator.calculate(AccountPlan.STUDENT)
     assert fee == 0.05
 
-def test_FeeCalculator_calculate_non_student_plan():
+def test_FeeCalculator_calculate_non_student_plan() -> None:
     """Test Case ID: SC2"""
     fee = FeeCalculator.calculate(AccountPlan.NON_STUDENT)
     assert fee == 0.10
 
-def test_FeeCalculator_calculate_unknown_plan():
+def test_FeeCalculator_calculate_unknown_plan() -> None:
     """Test Case ID: SC3"""
     fee = FeeCalculator.calculate(AccountPlan.UNKNOWN)
     assert fee == 0.00
 
 
-# =========================================================
-# Decision and Loop Coverage Unit Test Cases
-# Method: MergedTransactions.merge_transactions(file_path: str) -> None
-# =========================================================
+
+"""
+    Decision and Loop Coverage Unit Test Cases
+    Method: MergedTransactions.merge_transactions(file_path: str) -> None
+"""
 
 @pytest.fixture
-def mock_new_transactions_dir(tmp_path):
+def mock_new_transactions_dir(tmp_path) -> None:
     """Fixture to mock NEW_TRANSACTIONS_DIR with a temporary directory."""
     new_dir = tmp_path / "new"
     new_dir.mkdir()
@@ -41,7 +44,7 @@ def mock_new_transactions_dir(tmp_path):
         yield new_dir
 
 
-def test_merge_transactions_empty_directory(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_empty_directory(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL1
     Inputs: Directory exists but contains no .txt files
@@ -55,7 +58,7 @@ def test_merge_transactions_empty_directory(mock_new_transactions_dir, tmp_path)
     assert content == "00                      00000 00000000   \n"
 
 
-def test_merge_transactions_one_valid_no_eof(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_one_valid_no_eof(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL2
     Inputs: One .txt file, one valid transaction, no EOF
@@ -77,7 +80,7 @@ def test_merge_transactions_one_valid_no_eof(mock_new_transactions_dir, tmp_path
     assert input_file.exists()
 
 
-def test_merge_transactions_one_file_first_line_eof(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_one_file_first_line_eof(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL3
     Inputs: One .txt file, first line is EOF
@@ -97,7 +100,7 @@ def test_merge_transactions_one_file_first_line_eof(mock_new_transactions_dir, t
     assert not input_file.exists()
 
 
-def test_merge_transactions_one_file_multiple_then_eof(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_one_file_multiple_then_eof(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL4
     Inputs: One .txt file, multiple transactions then EOF
@@ -119,7 +122,7 @@ def test_merge_transactions_one_file_multiple_then_eof(mock_new_transactions_dir
     assert not input_file.exists()
 
 
-def test_merge_transactions_multiple_files_valid(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_multiple_files_valid(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL5
     Inputs: Multiple .txt files with valid transactions
@@ -145,7 +148,7 @@ def test_merge_transactions_multiple_files_valid(mock_new_transactions_dir, tmp_
     assert not input_file2.exists()
 
 
-def test_merge_transactions_one_file_no_eof_line(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_one_file_no_eof_line(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL6
     Inputs: One .txt file with no EOF line
@@ -167,7 +170,7 @@ def test_merge_transactions_one_file_no_eof_line(mock_new_transactions_dir, tmp_
     assert input_file.exists()
 
 
-def test_merge_transactions_empty_txt_file(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_empty_txt_file(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL7
     Inputs: One empty .txt file
@@ -186,7 +189,7 @@ def test_merge_transactions_empty_txt_file(mock_new_transactions_dir, tmp_path):
     assert input_file.exists()
 
 
-def test_merge_transactions_non_txt_files(mock_new_transactions_dir, tmp_path):
+def test_merge_transactions_non_txt_files(mock_new_transactions_dir, tmp_path) -> None:
     """
     Test Case ID: DL8
     Inputs: Directory contains non .txt files
@@ -205,7 +208,7 @@ def test_merge_transactions_non_txt_files(mock_new_transactions_dir, tmp_path):
     assert input_file.exists()
 
 
-def test_merge_transactions_invalid_file_path(mock_new_transactions_dir, tmp_path, capsys):
+def test_merge_transactions_invalid_file_path(mock_new_transactions_dir, tmp_path, capsys) -> None:
     """
     Test Case ID: DL9
     Inputs: Invalid file path

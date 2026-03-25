@@ -54,7 +54,7 @@ class ATMFrontEnd:
         "FI": "Fast Internet, Inc."
     }
     
-    def __init__(self, accounts_file=None, transaction_file=None):
+    def __init__(self, accounts_file=None, transaction_file=None) -> None:
         self.session = Session()
         self.account_repository = AccountRepository()
         self.transaction_list = []
