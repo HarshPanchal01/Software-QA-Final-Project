@@ -14,10 +14,10 @@ from src.shared.bank_accounts import BankAccount
 
 class BackendProcessor:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.master_accounts: Dict[str, BankAccount] = {}
 
-    def run(self):
+    def run(self) -> None:
         """Main execution flow for the backend."""
         # 1. Load current bank accounts from current master bank accounts file
         self.master_accounts = BankAccountFileIO.read_master_accounts(MASTER_BANK_ACCOUNTS_FILE)

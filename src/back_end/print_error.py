@@ -1,4 +1,4 @@
-def log_constraint_error(description, context, fatal=False):
+def log_constraint_error(description, context, fatal=False) -> None:
     """
     Logs errors in the required format and exits if fatal.
     
