@@ -1,8 +1,23 @@
 login
 standard
-Bob Smith
+Marty McFly
+withdrawal
+67891
+600
+withdrawal
+67891
+300
+withdrawal
+67891
+300
+withdrawal
+67891
+-300
 deposit
-22222
-200.00
+67891
+800
+transfer
+67891
+67892
+500
 logout
-quit
