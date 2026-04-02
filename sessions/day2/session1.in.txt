@@ -1,2 +1,8 @@
 login
+standard
+Bob Smith
+deposit
+22222
+200.00
 logout
+quit

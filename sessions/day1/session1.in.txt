@@ -1,2 +1,12 @@
 login
+standard
+John Doe
+deposit
+12345
+100.00
+paybill
+12345
+EC
+50.00
 logout
+quit

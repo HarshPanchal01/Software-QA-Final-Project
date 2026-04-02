@@ -20,7 +20,7 @@ Usage:
     or via `python3 -m src.front_end.cli`.
 """
 
-from src.shared.directories import NEW_TRANSACTIONS_DIR, OLD_TRANSACTIONS_DIR, CURRENT_BANK_ACCOUNTS_FILE
+from src.shared.directories import config
 from src.front_end.session import Session
 from src.front_end.repository import AccountRepository
 from src.shared.auxiliary import MessageType
@@ -256,8 +256,8 @@ class ATMFrontEnd:
             if dir_name:
                 os.makedirs(dir_name, exist_ok=True)
         else:
-            new_dir = os.path.join(NEW_TRANSACTIONS_DIR)
-            processed_dir = os.path.join(OLD_TRANSACTIONS_DIR)
+            new_dir = os.path.join(config.NEW_TRANSACTIONS_DIR)
+            processed_dir = os.path.join(config.OLD_TRANSACTIONS_DIR)
             
             # Create directories if they don't exist
             os.makedirs(new_dir, exist_ok=True)
@@ -783,7 +783,7 @@ class ATMFrontEnd:
                 return
 
         # Load accounts (Requirement: reads in current bank accounts file)
-        accounts_to_load = self.accounts_file if self.accounts_file else CURRENT_BANK_ACCOUNTS_FILE
+        accounts_to_load = self.accounts_file if self.accounts_file else config.CURRENT_BANK_ACCOUNTS_FILE
         self.account_repository.load_from_file(accounts_to_load)
         
         stype = SessionType.ADMIN if session_input == "admin" else SessionType.STANDARD

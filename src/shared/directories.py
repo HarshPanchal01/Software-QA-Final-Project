@@ -1,17 +1,42 @@
-"""
-Transactions directories & files
-"""
-TRANSACTIONS_DIR = "src/program_data/transactions/"
-NEW_TRANSACTIONS_DIR = TRANSACTIONS_DIR + "new/" # all unprocessed transaction files from sessions are put into the 'new' directory
-OLD_TRANSACTIONS_DIR = TRANSACTIONS_DIR + "old/" # all processed transaction files are put here (currently unused, as its not required)
-MERGED_TRANSACTIONS_DIR = TRANSACTIONS_DIR + "merged/" # the merge transactions file lives in this directory
-MERGED_BANK_ACCOUNT_TRANSACTIONS_FILE = MERGED_TRANSACTIONS_DIR + "merged_bank_account_transactions_file.txt" # exact file path to the merged transactions file
+
+
+import os
+from dataclasses import dataclass
 
 """
-Bank Accounts directories & files
+directory_config class
+
+Keeps track of all the directories and files in the program.
+Used to seperate different environments like testing and production.
+
 """
-BANK_ACCOUNTS_DIR = "src/program_data/bank_accounts/"
-MASTER_BANK_ACCOUNTS_DIR = BANK_ACCOUNTS_DIR + "master/" # bank accounts file used by the backend. includes # of transactions and student plan
-CURRENT_BANK_ACCOUNTS_DIR = BANK_ACCOUNTS_DIR + "current/" # bank accounts file used by the frontend ATM. doesn't include # of transactions or student plan
-MASTER_BANK_ACCOUNTS_FILE = MASTER_BANK_ACCOUNTS_DIR + "master_bank_accounts.txt" # back end accounts file
-CURRENT_BANK_ACCOUNTS_FILE = CURRENT_BANK_ACCOUNTS_DIR + "current_bank_accounts.txt" # front end accounts file
+
+@dataclass
+class directory_config:
+    base_dir: str = os.environ.get("QABANK_DATA_DIR", "src/program_data")
+
+    # Transactions
+    @property
+    def TRANSACTIONS_DIR(self): return f"{self.base_dir}/transactions/"
+    @property
+    def NEW_TRANSACTIONS_DIR(self): return f"{self.TRANSACTIONS_DIR}new/"
+    @property
+    def OLD_TRANSACTIONS_DIR(self): return f"{self.TRANSACTIONS_DIR}old/"
+    @property
+    def MERGED_TRANSACTIONS_DIR(self): return f"{self.TRANSACTIONS_DIR}merged/"
+    @property
+    def MERGED_BANK_ACCOUNT_TRANSACTIONS_FILE(self): return f"{self.MERGED_TRANSACTIONS_DIR}merged_bank_account_transactions_file.txt"
+    
+    # Bank Accounts
+    @property
+    def BANK_ACCOUNTS_DIR(self): return f"{self.base_dir}/bank_accounts/"
+    @property
+    def MASTER_BANK_ACCOUNTS_DIR(self): return f"{self.BANK_ACCOUNTS_DIR}master/"
+    @property
+    def CURRENT_BANK_ACCOUNTS_DIR(self): return f"{self.BANK_ACCOUNTS_DIR}current/"
+    @property
+    def MASTER_BANK_ACCOUNTS_FILE(self): return f"{self.MASTER_BANK_ACCOUNTS_DIR}master_bank_accounts.txt"
+    @property
+    def CURRENT_BANK_ACCOUNTS_FILE(self): return f"{self.CURRENT_BANK_ACCOUNTS_DIR}current_bank_accounts.txt"
+
+config = directory_config()

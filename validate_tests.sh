@@ -114,8 +114,8 @@ TOTAL_TESTS=${#TEST_CASES[@]}
 i=0
 for test in "${TEST_CASES[@]}"; do
     i=$((i + 1))
-    # progress indicator
-    printf "\r${CYAN}Validating tests... ($i/$TOTAL_TESTS)${DEFAULT}"
+    # progress indicator (\033[K clears the rest of the line)
+    printf "\r${CYAN}Validating test $i/$TOTAL_TESTS: (${test})${DEFAULT}\033[K"
 
     # Calculate relative paths to find expected counterparts
     base_name=$(basename "$test")

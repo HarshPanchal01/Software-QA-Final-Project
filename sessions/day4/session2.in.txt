@@ -3,7 +3,6 @@ standard
 John Doe
 paybill
 12345
-FI
-20.00
+EC
+400
 logout
-quit
