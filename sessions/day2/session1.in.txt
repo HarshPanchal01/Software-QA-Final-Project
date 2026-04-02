@@ -1,2 +1,23 @@
 login
+standard
+Marty McFly
+withdrawal
+67891
+600
+withdrawal
+67891
+300
+withdrawal
+67891
+300
+withdrawal
+67891
+-300
+deposit
+67891
+800
+transfer
+67891
+67892
+500
 logout
