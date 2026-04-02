@@ -1,2 +1,12 @@
 login
+admin
+create
+Marty McFly
+1000
+create
+Luke Skywalker
+200
+create
+Sarah Conner
+2000
 logout

@@ -356,6 +356,10 @@ class ATMFrontEnd:
         if account.balance - amount < 0.00:
             self._print_message("Error: Insufficient funds.", MessageType.ERROR)
             return
+        
+        if amount <= 0:
+            self._print_message("Error: Withdrawal amount must be positive.", MessageType.ERROR)
+            return
 
         # --- Execution ---
         
@@ -451,7 +455,11 @@ class ATMFrontEnd:
         if to_account.balance + amount < 0.00:
             self._print_message("Error: Destination account would have negative balance.", MessageType.ERROR)
             return
-
+        
+        if amount <= 0:
+            self._print_message("Error: Transfer amount must be positive.", MessageType.ERROR)
+            return
+        
         # Transaction
         transaction = Transfer(holder_name, from_account_number, amount, to_account_number)
         self.transaction_list.append(transaction)
@@ -530,6 +538,10 @@ class ATMFrontEnd:
         if account.balance - amount < 0.00:
             self._print_message("Error: Insufficient funds.", MessageType.ERROR)
             return
+        
+        if amount <= 0:
+            self._print_message("Error: Paybill amount must be positive.", MessageType.ERROR)
+            return
 
         # --- Execution ---
         
@@ -588,6 +600,10 @@ class ATMFrontEnd:
             
         if not account.is_active():
             self._print_message("Error: Account is disabled.", MessageType.ERROR)
+            return
+        
+        if amount <= 0:
+            self._print_message("Error: Deposit amount must be positive.", MessageType.ERROR)
             return
 
         # --- Execution ---
