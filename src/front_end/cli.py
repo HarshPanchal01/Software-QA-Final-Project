@@ -589,6 +589,10 @@ class ATMFrontEnd:
         if not account.is_active():
             self._print_message("Error: Account is disabled.", MessageType.ERROR)
             return
+        
+        if amount <= 0:
+            self._print_message("Error: Deposit amount must be positive.", MessageType.ERROR)
+            return
 
         # --- Execution ---
         
