@@ -1,8 +1,8 @@
 login
 standard
-Bob Smith
-deposit
-22222
+Jane Smith
+withdrawal
+56789
 10.00
 logout
 quit

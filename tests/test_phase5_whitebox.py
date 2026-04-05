@@ -34,13 +34,15 @@ def test_FeeCalculator_calculate_unknown_plan() -> None:
     Method: MergedTransactions.merge_transactions(file_path: str) -> None
 """
 
+import unittest.mock
+
 @pytest.fixture
 def mock_new_transactions_dir(tmp_path) -> None:
     """Fixture to mock NEW_TRANSACTIONS_DIR with a temporary directory."""
     new_dir = tmp_path / "new"
     new_dir.mkdir()
     # Need to patch the value where it is used in the module
-    with patch("src.back_end.merged_transactions.NEW_TRANSACTIONS_DIR", str(new_dir) + "/"):
+    with patch("src.shared.directories.directory_config.NEW_TRANSACTIONS_DIR", new_callable=unittest.mock.PropertyMock, return_value=str(new_dir) + "/"):
         yield new_dir
 
 

@@ -1,9 +1,8 @@
 login
 standard
 John Doe
-paybill
+transfer
 12345
-FI
-20.00
+67890
+500
 logout
-quit

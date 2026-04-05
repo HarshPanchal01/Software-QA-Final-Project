@@ -18,7 +18,8 @@ fi
 
 INPUT_DIR="tests/test_inputs"
 OUTPUT_DIR="tests/actual_outputs"
-ACCOUNTS_FILE="src/program_data/bank_accounts/current/current_bank_accounts.txt"
+export QABANK_DATA_DIR="tests/test_data"
+ACCOUNTS_FILE="$QABANK_DATA_DIR/bank_accounts/current/current_bank_accounts.txt"
 
 echo "${CYAN}Starting automated tests...${DEFAULT}"
 
@@ -28,8 +29,13 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 mkdir -p "$OUTPUT_DIR"
 
-# Find all test inputs and run the program
-find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
+# Gather all test inputs into an array to count them
+TEST_CASES=($(find "$INPUT_DIR" -type f -name "*.in.txt" | sort))
+TOTAL_TESTS=${#TEST_CASES[@]}
+i=0
+
+# Run the program on each test case
+for input_file in "${TEST_CASES[@]}"; do
     # Calculate relative paths to maintain directory structure
     rel_path="${input_file#$INPUT_DIR/}"
     dir_name=$(dirname "$rel_path")
@@ -42,9 +48,11 @@ find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
     actual_out="$OUTPUT_DIR/$dir_name/$base_name.out"
     actual_atf="$OUTPUT_DIR/$dir_name/$base_name.atf"
     
-    echo "${CYAN}Running test: ${GRAY}$rel_path${DEFAULT}"
+    i=$((i + 1))
+    # progress indicator
+    printf "\r${CYAN}Running test $i/$TOTAL_TESTS: (${rel_path})${DEFAULT}\033[K"
     
-    # Remove old transaction file if exists locally just in case
+    # Remove old transaction file if exists locally
     rm -f "$actual_atf"
     
     # Run qabank with command line arguments (accounts file, output transaction file)
@@ -52,6 +60,7 @@ find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
     qabank "$ACCOUNTS_FILE" "$actual_atf" < "$input_file" > "$actual_out"
     
     # Strip terminal colors from output using sed for comparison later
+    #   (qubank uses ANSI codes for text formatting, which will mess up expected vs actual test comparisons)
     sed -i -e 's/\x1b\[[0-9;]*m//g' "$actual_out"
     
     # If the transaction file was not created, create an empty one for uniform comparison
@@ -60,4 +69,4 @@ find "$INPUT_DIR" -type f -name "*.in.txt" | sort | while read -r input_file; do
     fi
 done
 
-echo "${CYAN}Automated testing completed. Outputs saved to ${GRAY}$OUTPUT_DIR/${DEFAULT}"
+echo -e "\n${GREEN}Automated testing completed. Outputs saved to ${GRAY}$OUTPUT_DIR/${DEFAULT}"

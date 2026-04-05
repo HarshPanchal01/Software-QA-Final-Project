@@ -1,2 +1,9 @@
 login
+standard
+Jane Doe
+transfer
+67890
+56789
+100.00
 logout
+quit

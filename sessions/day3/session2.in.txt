@@ -1,9 +1,8 @@
 login
 standard
-Bob Smith
-transfer
-22222
+Jane Doe
+withdrawal
 67890
-50.00
+20.00
 logout
 quit

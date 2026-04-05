@@ -1,9 +1,7 @@
 login
 standard
 John Doe
-paybill
+withdrawal
 12345
-FI
-20.00
+600
 logout
-quit
