@@ -1,9 +1,8 @@
 login
 standard
-John Doe
-paybill
-12345
-FI
+Jane Doe
+withdrawal
+67890
 20.00
 logout
 quit

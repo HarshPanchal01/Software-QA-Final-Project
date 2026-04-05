@@ -13,3 +13,4 @@ create
 Sarah Conner
 2000
 logout
+quit

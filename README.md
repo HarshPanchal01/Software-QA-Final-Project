@@ -159,6 +159,15 @@ To execute the unit tests and view the coverage report, ensure your virtual envi
 pytest
 ```
 
+### Integration and Delivery (Phase 6 - Weekly Testing)
+In Phase 6, The Back End was updated to accept different file paths as arguments. This allows us to run weekly operations and tests in isolation (no file overlap).
+
+To execute the weekly tests, ensure your virtual environment is activated (*if applicable*), then run:
+```bash
+./weekly.sh
+```
+The current and master bank accounts files in `src/program_data/bank_accounts/current` and `src/program_data/bank_accounts/master` will represent the account state after the weekly run.
+
 ## Commiting to GitHub repo
  - Please use your own branch and open a pull request into main
  - Each pull request will require a review from one of the other group members

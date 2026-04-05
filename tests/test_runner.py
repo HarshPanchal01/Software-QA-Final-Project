@@ -9,6 +9,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DIR = os.path.join(PROJECT_ROOT, "tests")
 SRC_FILE = os.path.join(PROJECT_ROOT, "src", "front_end.py")
 
+# Ensure all subprocess tests operate completely within the test_data directory
+os.environ["QABANK_DATA_DIR"] = "tests/test_data"
+
 # Find all test cases (look for .in.txt files recursively)
 # Returns a list of tuples: (test_name, input_file_path, expected_output_file_path)
 def get_test_cases():
