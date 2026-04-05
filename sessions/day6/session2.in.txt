@@ -1,0 +1,7 @@
+login
+admin
+disable
+Luke Skywalker
+67893
+logout
+quit

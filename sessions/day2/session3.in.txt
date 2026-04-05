@@ -1,0 +1,12 @@
+login
+admin
+changeplan
+Marty McFly
+67891
+changeplan
+Marty McFly
+67892
+delete
+Sarah Conner
+67894
+logout

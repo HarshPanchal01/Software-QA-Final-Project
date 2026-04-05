@@ -1,0 +1,13 @@
+login
+admin
+delete
+Marty McFly
+67891
+delete
+Marty McFly
+67892
+delete
+Luke Skywalker
+67893
+logout
+quit
