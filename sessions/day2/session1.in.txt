@@ -17,7 +17,8 @@ deposit
 67891
 800
 transfer
-67891
 67892
-500
+67893
+200
 logout
+quit

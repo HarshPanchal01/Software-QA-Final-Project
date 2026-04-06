@@ -1,10 +1,16 @@
 login
 standard
-Bob Smith
-deposit
-22222
+Luke Skywalker
+withdrawal
+67893
 500
+withdrawal
+67893
+400
+withdrawal
+67893
+200
 withdrawal
 22222
 400
-logout
+quit

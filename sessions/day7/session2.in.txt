@@ -1,8 +1,13 @@
 login
-standard
-John Doe
-transfer
-12345
-67890
-500
+admin
+delete
+Marty McFly
+67891
+delete
+Marty McFly
+67892
+delete
+Luke Skywalker
+67893
 logout
+quit

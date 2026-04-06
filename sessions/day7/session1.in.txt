@@ -1,12 +1,15 @@
 login
 standard
-John Doe
+Luke Skywalker
+withdrawal
+67893
+500
 deposit
+67893
+500
+transfer
+67893
 12345
-500.00
-paybill
-12345
-CQ
-100.00
+500
 logout
 quit

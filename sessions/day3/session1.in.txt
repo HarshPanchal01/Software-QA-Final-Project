@@ -1,9 +1,16 @@
 login
 standard
-Bob Smith
-transfer
-22222
-67890
-50.00
+John Doe
+deposit
+12345
+500
+paybill
+12345
+Electric Company
+500
+paybill
+12345
+EC
+500
 logout
 quit

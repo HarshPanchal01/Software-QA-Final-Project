@@ -3,6 +3,9 @@ admin
 create
 Marty McFly
 1000
+create 
+Marty McFly
+2000
 create
 Luke Skywalker
 200

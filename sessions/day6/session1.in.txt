@@ -1,9 +1,12 @@
 login
 standard
-Jane Doe
-transfer
-67890
-56789
-100.00
+Luke Skywalker
+deposit
+67893
+1000
+FI
+100
+delete
+create
 logout
 quit
