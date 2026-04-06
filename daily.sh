@@ -54,7 +54,7 @@ for session_file in "${session_files[@]}"; do
     
     # run the front end
     print_message "${CYAN}Running front end for session: ${GRAY}$session_file${DEFAULT}"
-    qabank "$CURRENT_ACCOUNTS" "$output_tx_file" < "$session_file" > /dev/null
+    ./sqa_final_project_venv/bin/qabank "$CURRENT_ACCOUNTS" "$output_tx_file" < "$session_file" > /dev/null
     
     # ensure transaction file was created
     if [ ! -f "$output_tx_file" ]; then
@@ -64,7 +64,7 @@ done
 
 # run the backend
 print_message "${CYAN}Running backend...${DEFAULT}"
-python -m src.back_end.main
+./sqa_final_project_venv/bin/python3 -m src.back_end.main
 
 if [ $? -eq 0 ]; then
     print_message "${GREEN}Daily run completed successfully.${DEFAULT}"

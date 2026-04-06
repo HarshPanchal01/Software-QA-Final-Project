@@ -67,6 +67,16 @@ python3 -m src.back_end.main
 ```
 *Note: This automatically reads the master accounts from `src/program_data/bank_accounts/master/`, merges any new transactions from `src/program_data/transactions/new/`, and outputs updated bank account files.*
 
+### 5. Usage (Phase 6 - Integration and Delivery)
+
+To simulate a full week of operations combining both the Front End and Back End:
+
+```bash
+# Run the Weekly Operations script
+./weekly.sh
+```
+*Note: This automatically initializes "Day 0" baseline accounts and runs the `daily.sh` script sequentially for 7 days using the session inputs in `sessions/dayX/`.*
+
 ## Input/Output (Phase 2 - Front End)
 
 ### stdin Example

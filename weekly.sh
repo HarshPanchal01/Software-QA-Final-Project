@@ -17,6 +17,11 @@ MASTER_ACCOUNTS="src/program_data/bank_accounts/master/master_bank_accounts.txt"
 
 echo -e "${CYAN}Starting Weekly Operations (7 Days)${DEFAULT}"
 
+# Setup Day 0 accounts
+echo -e "${GRAY}Initializing Day 0 accounts...${DEFAULT}"
+cp "tests/test_data/bank_accounts/current/current_bank_accounts.txt" "$CURRENT_ACCOUNTS"
+cp "tests/test_data/bank_accounts/master/master_bank_accounts.txt" "$MASTER_ACCOUNTS"
+
 # loop run daily.sh script for 7 days
 for day in {1..7}; do
     DAY_DIR="sessions/day${day}"
