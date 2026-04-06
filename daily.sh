@@ -14,6 +14,12 @@ DEFAULT=$'\033[0m'
 SESSIONS_DIR=$1
 SILENT_MODE=$2
 
+# Ensure qabank is installed
+if ! command -v qabank &> /dev/null; then
+    echo -e "${RED}Error: 'qabank' command not found. Please run ${GRAY}pip install -e .${DEFAULT}"
+    exit 1
+fi
+
 # helper for logging non-error messages
 print_message() {
     if [ "$SILENT_MODE" != "true" ]; then
@@ -54,7 +60,7 @@ for session_file in "${session_files[@]}"; do
     
     # run the front end
     print_message "${CYAN}Running front end for session: ${GRAY}$session_file${DEFAULT}"
-    ./sqa_final_project_venv/bin/qabank "$CURRENT_ACCOUNTS" "$output_tx_file" < "$session_file" > /dev/null
+    qabank "$CURRENT_ACCOUNTS" "$output_tx_file" < "$session_file" > /dev/null
     
     # ensure transaction file was created
     if [ ! -f "$output_tx_file" ]; then
@@ -64,7 +70,7 @@ done
 
 # run the backend
 print_message "${CYAN}Running backend...${DEFAULT}"
-./sqa_final_project_venv/bin/python3 -m src.back_end.main
+python -m src.back_end.main
 
 if [ $? -eq 0 ]; then
     print_message "${GREEN}Daily run completed successfully.${DEFAULT}"
