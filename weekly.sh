@@ -11,11 +11,22 @@ CYAN=$'\033[0;36m'
 GRAY=$'\033[1;30m'
 DEFAULT=$'\033[0m'
 
+# Ensure qabank is installed
+if ! command -v qabank &> /dev/null; then
+    echo -e "${RED}Error: 'qabank' command not found. Please run ${GRAY}pip install -e .${DEFAULT}"
+    exit 1
+fi
+
 # path to canonical bank accounts files
 CURRENT_ACCOUNTS="src/program_data/bank_accounts/current/current_bank_accounts.txt"
 MASTER_ACCOUNTS="src/program_data/bank_accounts/master/master_bank_accounts.txt"
 
 echo -e "${CYAN}Starting Weekly Operations (7 Days)${DEFAULT}"
+
+# Setup Day 0 accounts
+echo -e "${GRAY}Initializing Day 0 accounts...${DEFAULT}"
+cp "tests/test_data/bank_accounts/current/current_bank_accounts.txt" "$CURRENT_ACCOUNTS"
+cp "tests/test_data/bank_accounts/master/master_bank_accounts.txt" "$MASTER_ACCOUNTS"
 
 # loop run daily.sh script for 7 days
 for day in {1..7}; do

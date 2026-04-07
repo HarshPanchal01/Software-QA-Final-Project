@@ -14,6 +14,12 @@ DEFAULT=$'\033[0m'
 SESSIONS_DIR=$1
 SILENT_MODE=$2
 
+# Ensure qabank is installed
+if ! command -v qabank &> /dev/null; then
+    echo -e "${RED}Error: 'qabank' command not found. Please run ${GRAY}pip install -e .${DEFAULT}"
+    exit 1
+fi
+
 # helper for logging non-error messages
 print_message() {
     if [ "$SILENT_MODE" != "true" ]; then
